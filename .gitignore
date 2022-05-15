@@ -1,0 +1,9 @@
+.git
+node_modules
+.DS_Store
+
+.nyc_output
+dist
+doc
+test-results
+treemap-renderer-*.tgz
