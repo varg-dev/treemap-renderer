@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => {
             outDir,
             lib: {
                 entry: resolve(root, 'index.ts'),
-                name: 'treemap-renderer',
+                name: 'varg-dev-treemap-renderer',
                 formats: ['cjs', 'umd', 'es'],
-                // fileName: (format: ModuleFormat): string => format === 'umd' ? 'index.js' : `treemap-renderer.${format}.js`
+                // fileName: (format: ModuleFormat): string => format === 'umd' ? 'index.js' : `varg-dev-treemap-renderer.${format}.js`
             },
             sourcemap: 'hidden',
             // rollupOptions: {
