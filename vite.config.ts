@@ -5,14 +5,19 @@ import git from 'git-rev-sync';
 import { defineConfig, UserConfigExport } from 'vite';
 // import { visualizer } from 'rollup-plugin-visualizer';
 
+import pugPlugin from "vite-plugin-pug";
+
 const root = resolve(__dirname, 'source');
 const outDir = resolve(__dirname, 'dist');
 
+const pug_options = { localImports: true }
+const pug_locals = { name: "VARG dev Treemap Renderer" }
 
 export default defineConfig(({ mode }) => {
 
     const config: UserConfigExport = {
         root,
+        plugins: [pugPlugin(pug_options, pug_locals)], // visualizer()
         build: {
             outDir,
             lib: {
@@ -37,7 +42,6 @@ export default defineConfig(({ mode }) => {
             __LIB_NAME__: JSON.stringify(process.env.npm_package_name),
             __LIB_VERSION__: JSON.stringify(process.env.npm_package_version),
         },
-        // plugins: [visualizer()]
     };
 
     // switch (command) {

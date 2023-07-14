@@ -15,74 +15,27 @@
         integrity="sha256-tB5d+zyWiHQFQmJbLkUB/R3yq3K5zmN+38cBOZBwjkg=" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/roboto-mono@4.5.0/latin-300.css"
         integrity="sha256-/bTf0ZdBXp9eQn0Xbgim3IoygJpVg108KstIe5AKO7E=" crossorigin="anonymous">
+
+    <style>
+        body {
+            font-weight: 300;
+            font-family: "Roboto";
+        }
+
+        strong {
+            font-weight: 700;
+        }
+
+        code {
+            font-weight: 300 !important;
+            font-size: 1em;
+            font-family: "Roboto Mono" !important;
+        }
+    </style>
 </head>
 
 <body>
-
-    <section class="container mt-5">
-
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-8">
-
-                <h1>@varg-dev/<strong>Treemap Renderer</strong></h1>
-                <p class="lead">Test Page for Development</p>
-                <p>// about:
-                    version <code id="version">version</code>,
-                    branch <code id="branch">branch</code>,
-                    commit <code id="commit">commit</code>.
-                </p>
-
-            </div>
-        </div>
-
-    </section>
-
-    <footer>
-        <div class="row text-center">
-            <div class="col-12">
-                <p class="mt-5 mb-4">
-                    &copy; 2022&thinsp;&ndash;&thinsp;<span id="cryear"></span>
-                </p>
-            </div>
-        </div>
-    </footer>
-
+    <pug src="example/index.pug" />
 </body>
-
-<script type="module">
-    import * as template from './index.ts';
-    window['haeley'] = { template };
-</script>
-
-<script>
-
-    window.onload = () => {
-
-        document.title = __LIB_NAME__;
-        document.querySelector('#version').innerHTML = haeley.template.version();
-        document.querySelector('#branch').innerHTML = haeley.template.branch();
-        document.querySelector('#commit').innerHTML = haeley.template.commit();
-        document.querySelector('#cryear').innerHTML = new Date().getFullYear();
-
-        const template = haeley.template;
-    };
-</script>
-
-<style>
-    body {
-        font-weight: 300;
-        font-family: "Roboto";
-    }
-
-    strong {
-        font-weight: 700;
-    }
-
-    code {
-        font-weight: 300 !important;
-        font-size: 1em;
-        font-family: "Roboto Mono" !important;
-    }
-</style>
 
 </html>

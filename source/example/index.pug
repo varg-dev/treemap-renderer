@@ -1,0 +1,24 @@
+section.container.mt-5
+    .row.justify-content-center
+        .col-12.col-lg-8
+            h1 @varg-dev/#[strong Treemap Renderer]
+            p.lead Test Page for Development - now with pug!
+            p // about:
+                | version #[code#version version],
+                | branch #[code#branch branch],
+                | commit #[code#commit commit].
+
+footer
+    .row.text-center
+        .col-12
+            p.mt-5.mb-4
+                | &copy; 2022&thinsp;&ndash;&thinsp;
+                span#cryear
+
+script(type="module")
+    | import * as treemaprenderer from './index.ts';
+    | window['treemaprenderer'] = treemaprenderer;
+    |
+
+script(type="module")
+    | import './example/example.js'
