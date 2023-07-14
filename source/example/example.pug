@@ -1,0 +1,59 @@
+
+block vars
+  - var example = { target: 'example.ts', title: 'Example Treemap', 'caption': '' }
+
+block header
+
+  section.container
+    header.my-5
+      h1.
+        | #[span.font-weight-bold #[a(href = '/index.html') treemap]]
+        | &#x2014; #{example.title}
+      p.lead #{example.caption}
+      p.mt-4
+        | WebGL #[span.font-weight-bold About Page]: #[a(href = `https://webgl-operate.org/about.html`) webgl-operate.org/about.html]
+        | &emsp;|&emsp;WebGL #[span.font-weight-bold Operate]: #[a(href = `https://webgl-operate.org`) webgl-operate.org]
+
+block content
+
+  section.container.mt-5
+    div.row
+      div.col
+        block canvas
+
+          canvas(id = `canvas` data-target = `${example.target}`).embed-responsive-item.w-100
+
+  section.container.mt-5
+    div.row
+      div.col
+        block control
+
+  section.container.mt-5
+    div.row
+      div.col
+        block breakdown
+
+  script(type="module", src = example.target, "defer")
+
+  script.
+
+    window.onload = function() {
+
+      function exampleClassNameFromTarget(target) {
+        return target.replace(/^([a-z])|[\s-_]+([a-z]?)/g, function(match, p1, p2, offset) {
+          return (p2 == undefined ? p1 : p2).toUpperCase();
+        }) + 'Example';
+      }
+
+      const element = document.getElementById('canvas');
+      const exampleClassName = exampleClassNameFromTarget(element.dataset.target);
+      const example = new window[exampleClassName];
+      window['example'] = example;
+      example.feature(element);
+
+      const aboutCode = window.document.getElementById('context-about');
+      if (aboutCode) {
+        aboutCode.innerText = context.aboutString();
+      }
+    };
+

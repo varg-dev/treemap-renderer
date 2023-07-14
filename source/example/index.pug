@@ -8,16 +8,18 @@ section.container.mt-5
                 | branch #[code#branch branch],
                 | commit #[code#commit commit].
 
+script(type="module")
+    | import * as treemaprenderer from './index.ts';
+    | window['treemaprenderer'] = treemaprenderer;
+
+script(type="module")
+    | import './example/index.js'
+
+include ./csv-treemap.pug
+
 footer
     .row.text-center
         .col-12
             p.mt-5.mb-4
                 | &copy; 2022&thinsp;&ndash;&thinsp;
                 span#cryear
-
-script(type="module")
-    | import * as treemaprenderer from './index.ts';
-    | window['treemaprenderer'] = treemaprenderer;
-
-script(type="module")
-    | import './example/example.js'
