@@ -19,9 +19,12 @@
         "ecmaVersion": 2020,
         "sourceType": "module",
         "project": [
-            "tsconfig.json"
+            "tsconfig.eslint.json"
         ]
     },
+    "ignorePatterns": [
+        "source/**/*.js"
+    ],
     "rules": {
         "@typescript-eslint/no-inferrable-types": [
             "off",
