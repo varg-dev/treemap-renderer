@@ -1,6 +1,6 @@
 
 block vars
-  - var example = { target: 'example.ts', title: 'Example Treemap', 'caption': '' }
+  - var example = { target: './example/example.ts', constructor: 'Example', title: 'Example Treemap', 'caption': '' }
 
 block header
 
@@ -21,7 +21,7 @@ block content
       div.col
         block canvas
 
-          canvas(id = `canvas` data-target = `${example.target}`).embed-responsive-item.w-100
+          canvas(id = `canvas` data-target = example.target, data-constructor = example.constructor).embed-responsive-item.w-100
 
   section.container.mt-5
     div.row
@@ -33,27 +33,25 @@ block content
       div.col
         block breakdown
 
-  script(type="module", src = example.target, "defer")
+  script(type="module").
+    import { #{example.constructor} } from '#{example.target}';
+    window[`#{example.constructor}`] = #{example.constructor};
 
-  script.
+  script(type="module").
 
     window.onload = function() {
 
-      function exampleClassNameFromTarget(target) {
-        return target.replace(/^([a-z])|[\s-_]+([a-z]?)/g, function(match, p1, p2, offset) {
-          return (p2 == undefined ? p1 : p2).toUpperCase();
-        }) + 'Example';
-      }
+      console.log("Load example");
 
-      const element = document.getElementById('canvas');
-      const exampleClassName = exampleClassNameFromTarget(element.dataset.target);
-      const example = new window[exampleClassName];
-      window['example'] = example;
-      example.feature(element);
+      const canvas = document.getElementById('canvas');
+      const exampleClassName = canvas.dataset.constructor;
+      console.log("Instantiate", exampleClassName);
+      const exampleRenderer = new window[exampleClassName];
+      window['example'] = exampleRenderer;
+      exampleRenderer.feature(canvas);
 
       const aboutCode = window.document.getElementById('context-about');
       if (aboutCode) {
-        aboutCode.innerText = context.aboutString();
+        aboutCode.innerText = 'Test About';
       }
     };
-
