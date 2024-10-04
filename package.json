@@ -6,6 +6,7 @@
     "author": "Computer Graphics Systems Group @ HPI, DEF, Uni Potsdam & CG Internals",
     "main": "dist/varg-dev-treemap-renderer.umd.js",
     "types": "dist/index.d.ts",
+    "type": "module",
     "exports": {
         "import": "./dist/varg-dev-treemap-renderer.es.js",
         "require": "./dist/varg-dev-treemap-renderer.umd.js"
