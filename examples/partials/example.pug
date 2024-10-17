@@ -1,0 +1,62 @@
+
+extends ./template.pug
+
+block vars
+  - var example = { target: './examples/example.ts', constructor: 'Example', title: 'Example Treemap', 'caption': '' }
+
+block content
+
+  section.container.mt-5
+    .row
+      .col-12
+        h1
+          | #[span.font-weight-bold #[a(href = '/index.html') Treemaps]]
+          | &#x2014; #{example.title}
+
+  section.container.mt-5
+    div.row
+      div.col
+        block canvas
+
+          canvas(id = `canvas` data-target = example.target, data-constructor = example.constructor).embed-responsive-item.w-100
+
+  section.container.mt-5
+    div.row
+      div.col
+        block control
+
+  section.container.mt-5
+    div.row
+      div.col
+        block breakdown
+
+block scripts
+
+  script(type="module").
+    import { #{example.constructor} } from '#{example.target}';
+    window[`#{example.constructor}`] = #{example.constructor};
+
+  script(type="module").
+
+    window.onload = function() {
+
+      const canvas = document.getElementById('canvas');
+      const exampleClassName = canvas.dataset.constructor;
+      const exampleRenderer = new window[exampleClassName];
+      window['example'] = exampleRenderer;
+      exampleRenderer.feature(canvas);
+
+      const aboutCode = window.document.getElementById('context-about');
+      if (aboutCode) {
+        aboutCode.innerText = context.aboutString();
+      }
+    };
+
+  script(type="module").
+    import * as treemaprenderer from '/examples/index.ts';
+    window['treemaprenderer'] = treemaprenderer;
+    document.title = __LIB_NAME__;
+    document.querySelector('#version').innerHTML = treemaprenderer.version();
+    document.querySelector('#branch').innerHTML = treemaprenderer.branch();
+    document.querySelector('#commit').innerHTML = treemaprenderer.commit();
+    document.querySelector('#cryear').innerHTML = new Date().getFullYear();

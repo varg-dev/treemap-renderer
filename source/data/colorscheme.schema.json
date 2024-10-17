@@ -1,0 +1,8 @@
+{
+    "id": "/ColorScheme",
+    "type": "object",
+    "properties": {
+        "inverted": { "type": "boolean", "default": false },
+        "classBounds": { "type": "array", "items": { "type": "number" }}
+    }
+}

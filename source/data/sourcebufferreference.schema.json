@@ -1,0 +1,5 @@
+{
+    "id": "/SourceBufferReference",
+    "type": "string",
+    "pattern": "^(buffer):[_a-zA-Z][_a-zA-Z0-9]*$"
+}

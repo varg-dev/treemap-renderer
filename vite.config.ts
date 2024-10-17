@@ -5,26 +5,41 @@ import git from 'git-rev-sync';
 import { defineConfig, UserConfigExport } from 'vite';
 // import { visualizer } from 'rollup-plugin-visualizer';
 
-import pugPlugin from "vite-plugin-pug";
+import pugPlugin from 'vite-plugin-pug';
+import glsl from 'vite-plugin-glsl';
 
-const root = resolve(__dirname, 'source');
+const root = resolve(__dirname, '.');
+const source = resolve(__dirname, 'source');
 const outDir = resolve(__dirname, 'dist');
 
 const pug_options = { localImports: true }
-const pug_locals = { name: "VARG dev Treemap Renderer" }
+const pug_locals = { name: "VARG Treemap Renderer" }
+
+let commit = '';
+try {
+    commit = git.short(__dirname);
+} catch {
+    // nothing
+}
+
+let branch = '';
+try {
+    branch = git.branch(__dirname);
+} catch {
+    // nothing
+}
 
 export default defineConfig(({ mode }) => {
 
     const config: UserConfigExport = {
         root,
-        plugins: [pugPlugin(pug_options, pug_locals)], // visualizer()
+        plugins: [pugPlugin(pug_options, pug_locals), glsl()], // visualizer()
         build: {
             outDir,
             lib: {
-                entry: resolve(root, 'index.ts'),
-                name: 'varg-dev-treemap-renderer',
+                entry: resolve(source, 'treemap-renderer.ts'),
+                name: 'treemap-renderer',
                 formats: ['cjs', 'umd', 'es'],
-                // fileName: (format: ModuleFormat): string => format === 'umd' ? 'index.js' : `varg-dev-treemap-renderer.${format}.js`
             },
             sourcemap: 'hidden',
             // rollupOptions: {
@@ -34,14 +49,19 @@ export default defineConfig(({ mode }) => {
             //             rxjs: 'rxjs'
             //         }
             //     }
-            // }
+            // input: {
+            //     main: resolve(__dirname, 'examples/index.html'),
+            // },
+            // },
+            // commonjsOptions: { include: [/webgl-operate/, /papaparse/] },
         },
         define: {
-            __GIT_COMMIT__: JSON.stringify(git.short(__dirname)),
-            __GIT_BRANCH__: JSON.stringify(git.branch(__dirname)),
+            __GIT_COMMIT__: JSON.stringify(commit),
+            __GIT_BRANCH__: JSON.stringify(branch),
             __LIB_NAME__: JSON.stringify(process.env.npm_package_name),
             __LIB_VERSION__: JSON.stringify(process.env.npm_package_version),
         },
+        assetsInclude: ['**/*.fnt'],
     };
 
     // switch (command) {
@@ -57,17 +77,16 @@ export default defineConfig(({ mode }) => {
     switch (mode) {
 
         case 'development':
-            config.build.outDir = outDir;
+            config.build!.outDir = outDir;
             break;
 
         case 'production':
         default:
-            config.build.emptyOutDir = true;
-            // config.define.__DISABLE_ASSERTIONS__ = JSON.stringify(true);
-            // config.define.__LOG_VERBOSITY_THRESHOLD__ = JSON.stringify(2);
+            config.build!.emptyOutDir = true;
+            config.define!.__DISABLE_ASSERTIONS__ = JSON.stringify(true);
+            config.define!.__LOG_VERBOSITY_THRESHOLD__ = JSON.stringify(2);
             break;
     }
 
-    console.log(config);
     return config;
 });

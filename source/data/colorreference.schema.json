@@ -1,0 +1,6 @@
+{
+    "id": "/ColorReference",
+    "type": "string",
+    "pattern": "^(color):[_a-zA-Z][_a-zA-Z0-9\\-]*[_a-zA-Z0-9]+$",
+    "description": "Named identifier used to reference a color throughout the treemap configuration."
+}

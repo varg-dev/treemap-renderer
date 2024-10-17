@@ -1,0 +1,53 @@
+
+extends ../partials/example.pug
+
+include ../partials/code.pug
+
+block vars
+  -
+    // Overwrite example and its keys to adjust the information injected into the page
+    var example = {
+      target: './treemap.ts',
+      constructor: 'ExplicitInnerNodesTreemapExample',
+      title: 'Explicit Inner Nodes Treemap',
+      caption: ''
+    }
+
+block control
+
+  button.float-right.btn.btn-primary(type="button")#reload
+    | Reload Page
+
+  p.mb-1
+    | CSV Content:
+
+  textarea.form-control#csv-data(rows="25")
+    | # ids=id
+    | # parents=parent
+    | # weights=a
+    | # heights=b
+    | # colors=c
+    | # labels=name
+    | id;parent;name;a;b;c
+    | 1;0;a
+    | 2;0;b
+    | 3;0;c
+    | 4;0;d
+    | 5;1;e;0.125;0.1;0.0
+    | 6;1;f;0.25;0.1;0.1
+    | 7;2;g;0.125;0.3;0.1
+    | 8;2;h;0.125;0.2;0.6
+    | 9;3;i;0.5;0.1;0.7
+    | 10;3;j;0.125;0.1;1.0
+    | 11;4;k;0.5;0.1;0.0
+    | 12;4;l;0.5;0.2;0.0
+
+  p.mb-1.mt-1
+    | Direct Link:
+
+    pre.alert.alert-secondary
+      code(id = 'data-hash',style="user-select: all;")
+
+block breakdown
+
+  +code('context-about', ' ', 'WebGL/webgl-operate Information:')

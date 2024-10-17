@@ -1,0 +1,48 @@
+
+extends ../partials/example.pug
+
+include ../partials/code.pug
+
+block vars
+  -
+    // Overwrite example and its keys to adjust the information injected into the page
+    var example = {
+      target: './treemap.ts',
+      constructor: 'GroupedTreemapExample',
+      title: 'Grouped Treemap',
+      caption: ''
+    }
+
+block control
+
+  button.float-right.btn.btn-primary(type="button")#reload
+    | Reload Page
+
+  p.mb-1
+    | CSV Content:
+
+  textarea.form-control#csv-data(rows="25")
+    | # groupings=d/e
+    | # weights=a
+    | # heights=b
+    | # colors=c
+    | # labels=name
+    | name;a;b;c;d;e
+    | e;0.125;0.1;0.0;false;low
+    | f;0.25;0.1;0.1;false;high
+    | g;0.125;0.3;0.1;true;high
+    | h;0.125;0.2;0.6;n/a;medium
+    | i;0.5;0.1;0.7;true;medium
+    | j;0.125;0.1;1.0;false;low
+    | k;0.5;0.1;0.0;true;low
+    | l;0.5;0.2;0.0;true;high
+
+  p.mb-1.mt-1
+    | Direct Link:
+
+    pre.alert.alert-secondary
+      code(id = 'data-hash',style="user-select: all;")
+
+block breakdown
+
+  +code('context-about', ' ', 'WebGL/webgl-operate Information:')

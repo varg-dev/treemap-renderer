@@ -1,0 +1,6 @@
+{
+    "id": "/BufferReference",
+    "type": "string",
+    "pattern": "^(buffer|bufferView):[_a-zA-Z][_a-zA-Z0-9\\-]*[_a-zA-Z0-9]+$",
+    "description": "Named identifier used to reference a buffer or buffer view throughout the treemap configuration."
+}

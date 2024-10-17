@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "esnext",
         "target": "es2020",
         "esModuleInterop": true,
         "lib": [
@@ -12,7 +12,7 @@
         "alwaysStrict": true,
         "declaration": true,
         "experimentalDecorators": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "noImplicitAny": true,
         "noUnusedLocals": true,
         "noUnusedParameters": false,
@@ -21,18 +21,19 @@
         "resolveJsonModule": true,
         "skipLibCheck": true,
         "sourceMap": false,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "types": [
+            "vite-plugin-glsl/ext",
+            "vite/client"
+        ]
     },
     "typedocOptions": {
         "out": "doc",
         "excludePrivate": false,
         "hideGenerator": true
     },
-    "files": [
-        "source/index.ts"
-    ],
     "include": [
-        "source/**/*.ts",
+        "source/*.*",
     ],
     "exclude": [
         "node_modules",

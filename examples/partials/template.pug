@@ -1,0 +1,26 @@
+block vars
+
+section.container.mt-5
+    .row.justify-content-center
+        .col-12.col-lg-8
+            h1 @varg-dev/#[strong Treemap Renderer]
+            p.lead Test Page for Development
+            p // about:
+                | version #[code#version version],
+                | branch #[code#branch branch],
+                | commit #[code#commit commit].
+            p.mt-4
+                | WebGL #[span.font-weight-bold About Page]: #[a(href = `https://webgl-operate.org/about.html`) webgl-operate.org/about.html]
+                | &emsp;|&emsp;WebGL #[span.font-weight-bold Operate]: #[a(href = `https://webgl-operate.org`) webgl-operate.org]
+
+section.container.mt-5
+    block content
+
+footer
+    .row.text-center
+        .col-12
+            p.mt-5.mb-4
+                | &copy; 2022&thinsp;&ndash;&thinsp;
+                span#cryear
+
+block scripts
