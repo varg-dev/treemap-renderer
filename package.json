@@ -60,6 +60,7 @@
     "scripts": {
         "build": "vite build && tsc --emitDeclarationOnly",
         "build:dev": "vite dev",
+        "build:website": "vite build --base=/treemap-renderer/ --mode=website && vite preview  --base=/treemap-renderer/ --mode=website",
         "postversion": "git push && git push --tags",
         "prepack": "npm run preversion",
         "preversion": "npm install && npm run build && npm run test"
