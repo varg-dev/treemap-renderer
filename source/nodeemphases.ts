@@ -1,9 +1,9 @@
 
 /* spellchecker: disable */
 
-import { Geometry } from '../geometry';
-import { Node } from '../node';
-import { Topology } from '../topology';
+import { Geometry } from './geometry';
+import { Node } from './node';
+import { Topology } from './topology';
 
 /* spellchecker: enable */
 

@@ -1,48 +1,57 @@
 
-extends ../partials/example.pug
+extends ../partials/template.pug
 
 include ../partials/code.pug
 
-block vars
-  -
-    // Overwrite example and its keys to adjust the information injected into the page
-    var example = {
-      target: './treemap.ts',
-      constructor: 'GroupedTreemapExample',
-      title: 'Grouped Treemap',
-      caption: ''
-    }
+block content
 
-block control
+  section.container.mt-5
+    .row
+      .col-12
+        h1
+          | #[span.font-weight-bold #[a(href=base+'index.html') Treemaps]]
+          | &#x2014; Grouped Treemap
 
-  button.float-right.btn.btn-primary(type="button")#reload
-    | Reload Page
+  section.container.mt-5
+    div.row
+      div.col
+        block canvas
 
-  p.mb-1
-    | CSV Content:
+          canvas(id = `canvas`).embed-responsive-item.w-100
 
-  textarea.form-control#csv-data(rows="25")
-    | # groupings=d/e
-    | # weights=a
-    | # heights=b
-    | # colors=c
-    | # labels=name
-    | name;a;b;c;d;e
-    | e;0.125;0.1;0.0;false;low
-    | f;0.25;0.1;0.1;false;high
-    | g;0.125;0.3;0.1;true;high
-    | h;0.125;0.2;0.6;n/a;medium
-    | i;0.5;0.1;0.7;true;medium
-    | j;0.125;0.1;1.0;false;low
-    | k;0.5;0.1;0.0;true;low
-    | l;0.5;0.2;0.0;true;high
+  section.container.mt-5
+    div.row
+      div.col
 
-  p.mb-1.mt-1
-    | Direct Link:
+        button.float-right.btn.btn-primary(type="button")#reload
+          | Reload Page
 
-    pre.alert.alert-secondary
-      code(id = 'data-hash',style="user-select: all;")
+        p.mb-1
+          | CSV Content:
 
-block breakdown
+        textarea.form-control#csv-data(rows="25")
+          | # groupings=d/e
+          | # weights=a
+          | # heights=b
+          | # colors=c
+          | # labels=name
+          | name;a;b;c;d;e
+          | e;0.125;0.1;0.0;false;low
+          | f;0.25;0.1;0.1;false;high
+          | g;0.125;0.3;0.1;true;high
+          | h;0.125;0.2;0.6;n/a;medium
+          | i;0.5;0.1;0.7;true;medium
+          | j;0.125;0.1;1.0;false;low
+          | k;0.5;0.1;0.0;true;low
+          | l;0.5;0.2;0.0;true;high
 
-  +code('context-about', ' ', 'WebGL/webgl-operate Information:')
+        p.mb-1.mt-1
+          | Direct Link:
+
+          pre.alert.alert-secondary
+            code(id = 'data-hash',style="user-select: all;")
+
+  section.container.mt-5
+    div.row
+      div.col
+        +code('context-about', ' ', 'WebGL/webgl-operate Information:')

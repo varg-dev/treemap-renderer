@@ -11,9 +11,13 @@ import glsl from 'vite-plugin-glsl';
 const root = resolve(__dirname, '.');
 const source = resolve(__dirname, 'source');
 const outDir = resolve(__dirname, 'dist');
+const websiteDir = resolve(__dirname, 'website');
 
 const pug_options = { localImports: true }
-const pug_locals = { name: "VARG Treemap Renderer" }
+const pug_locals = {
+    name: "VARG Treemap Renderer",
+    base: '/'
+}
 
 let commit = '';
 try {
@@ -29,32 +33,16 @@ try {
     // nothing
 }
 
+/**
+ * 3 modes are considered:
+ * - Development: don't emit anything, serve website and library in dev mode. (development, vite dev)
+ * - Lib Prod: Emit library build as cjs, umd, and es. (production, vite build)
+ * - Website Prod: Emit website with library as dependency. (website, vite build --mode=website)
+ */
 export default defineConfig(({ mode }) => {
 
     const config: UserConfigExport = {
         root,
-        plugins: [pugPlugin(pug_options, pug_locals), glsl()], // visualizer()
-        build: {
-            outDir,
-            lib: {
-                entry: resolve(source, 'treemap-renderer.ts'),
-                name: 'treemap-renderer',
-                formats: ['cjs', 'umd', 'es'],
-            },
-            sourcemap: 'hidden',
-            // rollupOptions: {
-            //     external: ['rxjs'],
-            //     output: {
-            //         globals: {
-            //             rxjs: 'rxjs'
-            //         }
-            //     }
-            // input: {
-            //     main: resolve(__dirname, 'examples/index.html'),
-            // },
-            // },
-            // commonjsOptions: { include: [/webgl-operate/, /papaparse/] },
-        },
         define: {
             __GIT_COMMIT__: JSON.stringify(commit),
             __GIT_BRANCH__: JSON.stringify(branch),
@@ -64,29 +52,59 @@ export default defineConfig(({ mode }) => {
         assetsInclude: ['**/*.fnt'],
     };
 
-    // switch (command) {
-
-    //     case 'serve':
-    //         break;
-
-    //     case 'build':
-    //     default:
-    //         break;
-    // }
-
     switch (mode) {
 
         case 'development':
-            config.build!.outDir = outDir;
+            config.build = {
+                outDir,
+                lib: {
+                    entry: resolve(source, 'treemap-renderer.ts'),
+                    name: 'treemap-renderer',
+                    formats: ['cjs', 'umd', 'es'],
+                },
+                sourcemap: 'hidden',
+            };
+            break;
+
+        case 'website':
+            config.base = '/treemap-renderer/';
+            pug_locals.base = config.base;
+            config.build = {
+                outDir: websiteDir,
+                sourcemap: 'hidden',
+                rollupOptions: {
+                    input: {
+                        main: resolve(__dirname, 'index.html'),
+                        explicit: resolve(__dirname, 'examples/csv-with-explicit-inner-nodes/index.html'),
+                        grouping: resolve(__dirname, 'examples/csv-with-grouping/index.html'),
+                        implicit: resolve(__dirname, 'examples/csv-with-implicit-inner-nodes/index.html'),
+                    },
+                    output: {
+                        inlineDynamicImports: false,
+                    }
+                }
+            };
             break;
 
         case 'production':
         default:
-            config.build!.emptyOutDir = true;
+            config.build = {
+                outDir,
+                // emptyOutDir: true,
+                lib: {
+                    entry: resolve(source, 'treemap-renderer.ts'),
+                    name: 'treemap-renderer',
+                    formats: ['cjs', 'umd', 'es'],
+                },
+                sourcemap: 'hidden',
+            };
             config.define!.__DISABLE_ASSERTIONS__ = JSON.stringify(true);
             config.define!.__LOG_VERBOSITY_THRESHOLD__ = JSON.stringify(2);
             break;
+
     }
+
+    config.plugins = [pugPlugin(pug_options, pug_locals), glsl()]; // visualizer()
 
     return config;
 });

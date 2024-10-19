@@ -3,8 +3,8 @@
 
 import { gl_matrix_extensions, vec4 } from 'webgl-operate';
 
-import { Node } from '../node';
-import { Topology } from '../topology';
+import { Node } from './node';
+import { Topology } from './topology';
 
 /* spellchecker: enable */
 

@@ -4,6 +4,7 @@ node_modules
 
 .nyc_output
 dist
+website
 doc
 test-results
 varg-dev-treemap-renderer-*.tgz
