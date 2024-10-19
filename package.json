@@ -59,8 +59,9 @@
     },
     "scripts": {
         "build": "vite build && tsc --emitDeclarationOnly",
-        "build:dev": "vite dev",
-        "build:website": "vite build --mode=website && vite preview --mode=website",
+        "build:website": "vite build --mode=website",
+        "dev": "vite dev",
+        "dev:website": "vite build --mode=website && vite preview --mode=website",
         "postversion": "git push && git push --tags",
         "prepack": "npm run preversion",
         "preversion": "npm install && npm run build && npm run test"
