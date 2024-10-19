@@ -10,9 +10,9 @@ import {
     Renderer as AbstractRenderer,
 } from 'webgl-operate';
 
-import { NodeColors } from './geometry/nodecolors';
-import { NodeEmphases } from './geometry/nodeemphases';
-import { NodeIndices } from './geometry/nodeindices';
+import { NodeColors } from './nodecolors';
+import { NodeEmphases } from './nodeemphases';
+import { NodeIndices } from './nodeindices';
 
 import { AdaptiveLabelPlacement } from './adaptivelabelplacement';
 import { AttributeBuffer } from './attributebuffer';

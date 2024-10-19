@@ -14,7 +14,10 @@ const outDir = resolve(__dirname, 'dist');
 const websiteDir = resolve(__dirname, 'website');
 
 const pug_options = { localImports: true }
-const pug_locals = { name: "VARG Treemap Renderer" }
+const pug_locals = {
+    name: "VARG Treemap Renderer",
+    base: '/'
+}
 
 let commit = '';
 try {
@@ -40,7 +43,6 @@ export default defineConfig(({ mode }) => {
 
     const config: UserConfigExport = {
         root,
-        plugins: [pugPlugin(pug_options, pug_locals), glsl()], // visualizer()
         define: {
             __GIT_COMMIT__: JSON.stringify(commit),
             __GIT_BRANCH__: JSON.stringify(branch),
@@ -65,6 +67,8 @@ export default defineConfig(({ mode }) => {
             break;
 
         case 'website':
+            config.base = '/treemap-renderer/';
+            pug_locals.base = config.base;
             config.build = {
                 outDir: websiteDir,
                 sourcemap: 'hidden',
@@ -86,7 +90,7 @@ export default defineConfig(({ mode }) => {
         default:
             config.build = {
                 outDir,
-                emptyOutDir: true,
+                // emptyOutDir: true,
                 lib: {
                     entry: resolve(source, 'treemap-renderer.ts'),
                     name: 'treemap-renderer',
@@ -99,6 +103,8 @@ export default defineConfig(({ mode }) => {
             break;
 
     }
+
+    config.plugins = [pugPlugin(pug_options, pug_locals), glsl()]; // visualizer()
 
     return config;
 });

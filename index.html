@@ -35,7 +35,17 @@
 </head>
 
 <body>
-    <pug src="examples/index.pug" />
+    <pug src="/examples/index.pug" />
+
+    <script type="module">
+        import * as treemaprenderer from '/examples/index.ts';
+        window['treemaprenderer'] = treemaprenderer;
+        document.title = __LIB_NAME__;
+        document.querySelector('#version').innerHTML = treemaprenderer.version();
+        document.querySelector('#branch').innerHTML = treemaprenderer.branch();
+        document.querySelector('#commit').innerHTML = treemaprenderer.commit();
+        document.querySelector('#cryear').innerHTML = new Date().getFullYear();
+    </script>
 </body>
 
 </html>

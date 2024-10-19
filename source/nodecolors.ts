@@ -1,8 +1,8 @@
 
 /* spellchecker: disable */
 
-import { Node } from '../node';
-import { Topology } from '../topology';
+import { Node } from './node';
+import { Topology } from './topology';
 
 /* spellchecker: enable */
 

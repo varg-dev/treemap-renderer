@@ -36,6 +36,33 @@
 
 <body>
     <pug src="treemap.pug" />
+
+    <script type="module">
+        import { ExplicitInnerNodesTreemapExample } from './treemap.ts';
+
+        window.onload = function () {
+
+            const canvas = document.getElementById('canvas');
+            const exampleRenderer = new ExplicitInnerNodesTreemapExample();
+            window['example'] = exampleRenderer;
+            exampleRenderer.feature(canvas);
+
+            const aboutCode = window.document.getElementById('context-about');
+            if (aboutCode) {
+                aboutCode.innerText = context.aboutString();
+            }
+        };
+    </script>
+
+    <script type="module">
+        import * as treemaprenderer from '/examples/index.ts';
+        window['treemaprenderer'] = treemaprenderer;
+        document.title = __LIB_NAME__;
+        document.querySelector('#version').innerHTML = treemaprenderer.version();
+        document.querySelector('#branch').innerHTML = treemaprenderer.branch();
+        document.querySelector('#commit').innerHTML = treemaprenderer.commit();
+        document.querySelector('#cryear').innerHTML = new Date().getFullYear();
+    </script>
 </body>
 
 </html>
