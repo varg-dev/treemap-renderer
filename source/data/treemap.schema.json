@@ -12,8 +12,9 @@
                 "semantics": { "type": "string", "enum": [ "parent-id-id", "parent-index-id" ], "default": "parent-id-id" },
 
                 "edges": { "type": "array", "items": { "anyOf": [
-                            { "type": "integer", "minimum": 0 },
-                            { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 2, "maxItems": 2, "uniqueItems": true } ] } }
+                            { "type": "integer", "minimum": -1 },
+                            { "type": "array", "items": { "type": "integer", "minimum": -1 }, "minItems": 2, "maxItems": 2, "uniqueItems": true } ],
+                            "minItems": 0 } }
             },
             "required": [ "edges" ],
             "additionalProperties": false

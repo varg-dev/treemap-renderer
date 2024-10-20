@@ -54,7 +54,7 @@ The treemaps that this renderer currently supports a as follows:
   * Node Sorting
   * Margins between Nodes
 * Color Mappings:
-  * Colorbrewer Color Schemes
+  * Colorbrewer + Smith-Walt Color Schemes
   * Explicit Colors
 * Height Mapping
 * Emphasis

@@ -104,18 +104,18 @@ export class Visualization {
             return;
         }
 
-        assert(this._geometry !== undefined && this._geometry.colorTable !== undefined,
+        assert(this._geometry !== undefined && this._colorLUT !== undefined,
             `expected color lookup-table to be specified (cached)`);
 
         const topology = this._intermediaries.topology;
 
-        if (config.altered.topology || altered.emphasis.any) {
+        if (config.altered.topology || altered.emphasis.any || this._geometry.innerNodeEmphases === undefined) {
             this._geometry.innerNodeEmphases = NodeEmphases.innerNodes(topology,
                 geometryConfig.emphasis ? new Set(geometryConfig.emphasis.outline) : undefined,
                 geometryConfig.emphasis ? new Set(geometryConfig.emphasis.highlight) : undefined);
         }
 
-        if (config.altered.topology) {
+        if (config.altered.topology || this._geometry.innerNodeColors === undefined) {
             this._geometry.innerNodeColors = NodeColors.innerNodes(topology,
                 this._colorLUT.innerNodeColorOffset,
                 this._colorLUT.innerNodeColorCount);
@@ -132,9 +132,16 @@ export class Visualization {
             return;
         }
 
-        assert(this._geometry !== undefined && this._geometry.colorTable !== undefined,
+        assert(this._geometry !== undefined && this._colorLUT !== undefined,
             `expected color lookup-table to be specified (cached)`);
 
+        /* Create emphases buffer for all leaf nodes of all layers. */
+        if (config.altered.topology || altered.emphasis.any || this._geometry.leafNodeEmphases === undefined) {
+            this._geometry.leafNodeEmphases = NodeEmphases.leafNodes(
+                this._intermediaries.topology,
+                geometryConfig.emphasis ? new Set(geometryConfig.emphasis.outline) : undefined,
+                geometryConfig.emphasis ? new Set(geometryConfig.emphasis.highlight) : undefined);
+        }
 
         const hasLeafLayer = geometryConfig.leafLayer !== undefined;
 
@@ -147,16 +154,8 @@ export class Visualization {
             return;
         }
 
-        /* Create emphases buffer for all leaf nodes of all layers. */
-        if (config.altered.topology || altered.emphasis.any) {
-            this._geometry.leafNodeEmphases = NodeEmphases.leafNodes(
-                this._intermediaries.topology,
-                geometryConfig.emphasis ? new Set(geometryConfig.emphasis.outline) : undefined,
-                geometryConfig.emphasis ? new Set(geometryConfig.emphasis.highlight) : undefined);
-        }
-
         /* Skip color mapping if nothing has changed and colors were previously mapped. */
-        if (!altered.colors) {
+        if (!altered.colors && this._geometry.leafNodeColors !== undefined) {
             return;
         }
 
@@ -394,10 +393,15 @@ export class Visualization {
         /* Area Scales */
 
         if (this._geometry.leafNodeAreaScales === undefined) {
-            const areaScales = this._bufferResolver.resolve(this._configuration.geometry.leafLayer.areaScale!, config,
-                this._normalization, this._bufferResolver.constBufferCallback(1.0))!;
+            const defaultCallback = this._bufferResolver.constBufferCallback(1.0);
+            if (this._configuration.geometry.leafLayer) {
+                const areaScales = this._bufferResolver.resolve(this._configuration.geometry.leafLayer!.areaScale!, config,
+                    this._normalization, defaultCallback)!;
 
-            this._geometry.leafNodeAreaScales = GeometryCreation.createLeafAreaScalesBuffer(tree, areaScales);
+                this._geometry.leafNodeAreaScales = GeometryCreation.createLeafAreaScalesBuffer(tree, areaScales);
+            } else {
+                this._geometry.leafNodeAreaScales = GeometryCreation.createLeafAreaScalesBuffer(tree, defaultCallback());
+            }
         }
 
         /* Color Table */
@@ -494,17 +498,17 @@ export class Visualization {
             }
         };
 
-        if (config.altered.colors) {
+        if (config.altered.colors || this._colorLUT === undefined) {
             const emphasisColor = resolve(config.colors, config.geometry.emphasis ?
-                config.geometry.emphasis.color : undefined, new Color());
+                config.geometry.emphasis.color : undefined, new Color([0 / 255.0, 69 / 255.0, 100 / 255.0]));
 
-            const auxiliaryColor = resolve(config.colors, config.geometry.auxiliary, new Color());
+            const auxiliaryColor = resolve(config.colors, config.geometry.auxiliary, new Color([0 / 255.0, 67 / 255.0, 37 / 255.0]));
 
-            const innerColor = resolve(config.colors, config.geometry.parentLayer.colorMap,
-                [new Color(), new Color()]);
+            const innerColor = config.geometry.parentLayer ? resolve(config.colors, config.geometry.parentLayer.colorMap,
+                [new Color([91 / 255.0, 92 / 255.0, 93 / 255.0]), new Color([93 / 255.0, 94 / 255.0, 96 / 255.0])]) : [new Color([91 / 255.0, 92 / 255.0, 93 / 255.0]), new Color([93 / 255.0, 94 / 255.0, 96 / 255.0])];
 
-            const leafColor = resolve(config.colors, config.geometry.leafLayer!.colorMap,
-                [new Color(), new Color()]);
+            const leafColor = config.geometry.leafLayer ? resolve(config.colors, config.geometry.leafLayer.colorMap,
+                [new Color([0 / 255.0, 0 / 255.0, 0 / 255.0]), new Color([44 / 255.0, 14 / 255.0, 49 / 255.0])]) : [new Color([0 / 255.0, 0 / 255.0, 0 / 255.0]), new Color([44 / 255.0, 14 / 255.0, 49 / 255.0])];
 
             this._colorLUT = new ColorTable(emphasisColor as Color, auxiliaryColor as Array<Color>,
                 innerColor as Array<Color>, leafColor as Array<Color>);
@@ -556,7 +560,7 @@ export class Visualization {
             this._geometry.altered.alter('emphasisOutlineWidth');
         }
 
-        this._geometry.showRoot = config.geometry.parentLayer.showRoot!;
+        this._geometry.showRoot = config.geometry.parentLayer?.showRoot!;
 
         /** @todo refine and move this to height buffer creation, similar to color buffer creation  */
         let heights = undefined;
