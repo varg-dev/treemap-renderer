@@ -245,6 +245,28 @@ export class Configuration {
         return this._labels;
     }
 
+    public labelsToJSON(): object {
+        const labels = Object.assign({}, this._labels);
+
+        if (typeof labels.names !== "string") {
+            (labels.names as object) = Object.fromEntries(this._labels.names as Map<number, string>);
+        }
+
+        return labels;
+    }
+
+    public toJSON(): object {
+        return {
+            'topology': this.topology,
+            'buffers': this.buffers,
+            'bufferViews': this.bufferViews,
+            'colors': this.colors,
+            'layout': this.layout,
+            'geometry': this.geometry,
+            'labels': this.labelsToJSON()
+        };
+    }
+
 }
 
 export namespace Configuration {

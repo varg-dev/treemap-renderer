@@ -58,6 +58,11 @@ export class ImplicitInnerNodesTreemapExample extends Example {
 
     feature(element: HTMLCanvasElement | string): boolean {
 
+        const dataElement = window.document.getElementById('csv-data')! as HTMLTextAreaElement;
+        const hashElement = window.document.getElementById('data-hash')! as HTMLPreElement;
+        const reloadElement = window.document.getElementById('reload')! as HTMLButtonElement;
+        const configElement = window.document.getElementById('config-display')! as HTMLPreElement;
+
         const success = this.initialize(element);
 
         const renderer = this._visualization.renderer as Renderer;
@@ -69,7 +74,12 @@ export class ImplicitInnerNodesTreemapExample extends Example {
 
             try {
                 visualization.configuration = config;
+                // visualization.update();
                 renderer.invalidate();
+
+                if (configElement) {
+                    configElement.textContent = JSON.stringify(config.toJSON(), null, 2);
+                }
             }
             catch (error) {
                 visualization.configuration = oldConfig;
@@ -88,12 +98,7 @@ export class ImplicitInnerNodesTreemapExample extends Example {
         (window as any)['visualization'] = visualization;
         (window as any)['renderer'] = renderer;
 
-
-        const dataElement = window.document.getElementById('csv-data')! as HTMLTextAreaElement;
-        const hashElement = window.document.getElementById('data-hash')! as HTMLPreElement;
-        const reloadElement = window.document.getElementById('reload')! as HTMLButtonElement;
-
-        if (dataElement !== undefined) {
+        if (dataElement) {
             const searchParams = new URLSearchParams(window.location.search);
             const data = searchParams.get('data');
 
@@ -110,7 +115,7 @@ export class ImplicitInnerNodesTreemapExample extends Example {
                     .then((config: Configuration) => {
                         loadConfig(config);
 
-                        if (hashElement !== undefined) {
+                        if (hashElement) {
                             hashElement.textContent = this.obtainUrl(btoa(testdata));
                         }
                     });
@@ -118,15 +123,15 @@ export class ImplicitInnerNodesTreemapExample extends Example {
             dataElement.oninput({} as Event); // initial load
         }
 
-        if (reloadElement !== undefined && hashElement !== undefined) {
+        if (reloadElement && hashElement) {
             reloadElement.onclick = (event) => {
-                if (hashElement.textContent !== undefined && hashElement.textContent !== "") {
+                if (hashElement.textContent && hashElement.textContent !== "") {
                     window.location.href = hashElement.textContent! as string;
                 }
             };
         }
 
-        return success && dataElement !== undefined;
+        return success && dataElement !== undefined && dataElement !== null;
     }
 
 

@@ -13,6 +13,9 @@ block content
           | #[span.font-weight-bold #[a(href=base+'index.html') Treemaps]]
           | &#x2014; Explicit Inner Nodes Treemap
 
+        button.pull-end.btn.btn-primary(type="button")#reload
+          | Reload Page
+
   section.container.mt-5
     div.row
       div.col
@@ -23,9 +26,6 @@ block content
   section.container.mt-5
     div.row
       div.col
-
-        button.float-right.btn.btn-primary(type="button")#reload
-          | Reload Page
 
         p.mb-1
           | CSV Content:
@@ -52,11 +52,21 @@ block content
           | 11;4;k;0.5;0.1;0.0
           | 12;4;l;0.5;0.2;0.0
 
+  section.container.mt-5
+    div.row
+      div.col
+        p.mb-1.mt-1
+          | Prepared Config:
+        pre.alert.alert-secondary
+          code(id = 'config-display',style="user-select: all;")
+
+  section.container.mt-5
+    div.row
+      div.col
         p.mb-1.mt-1
           | Direct Link:
-
-          pre.alert.alert-secondary
-            code(id = 'data-hash',style="user-select: all;")
+        pre.alert.alert-secondary
+          code(id = 'data-hash',style="user-select: all;")
 
   section.container.mt-5
     div.row

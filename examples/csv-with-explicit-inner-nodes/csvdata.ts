@@ -34,51 +34,6 @@ export class CSVData {
         header.parent_column = 'parents';
     }
 
-    protected static initializeConfig(config: Configuration): void {
-        config.colors = [
-            { identifier: 'emphasis', colorspace: 'hex', value: '#00b0ff' },
-            { identifier: 'auxiliary', colorspace: 'hex', values: ['#00aa5e', '#71237c'] },
-            { identifier: 'inner', colorspace: 'hex', values: ['#e8eaee', '#eef0f4'] },
-            { identifier: 'leaf', preset: 'Oranges', steps: 7 },
-        ];
-
-        config.layout = {
-            algorithm: 'snake',
-            weight: 'bufferView:weights',
-            sort: {
-                key: 'bufferView:weights',
-                algorithm: NodeSort.Algorithm.Keep
-            },
-            parentPadding: { type: 'relative', value: 0.05 },
-            siblingMargin: { type: 'relative', value: 0.05 },
-            accessoryPadding: {
-                type: 'absolute',
-                direction: 'bottom',
-                value: [0.0, 0.02, 0.01, 0.0],
-                relativeAreaThreshold: 0.4, targetAspectRatio: 8.0,
-            },
-        };
-
-        config.geometry = {
-            parentLayer: { showRoot: true },
-            leafLayer: {
-                colorMap: 'color:leaf',
-                height: 'bufferView:heights-normalized',
-                colors: 'bufferView:colors-normalized',
-            },
-            emphasis: { outline: new Array<number>(), highlight: new Array<number>() },
-            heightScale: 0.5,
-        };
-
-        config.labels = {
-            innerNodeLayerRange: [1, 2],
-            numTopInnerNodes: 50,
-            numTopWeightNodes: 50,
-            numTopHeightNodes: 50,
-            numTopColorNodes: 50,
-        };
-    }
-
     protected static parseHeader(lines: Array<string>, header: CSVHeader): void {
         while (lines.length >= 1 && lines[0].startsWith('#')) {
             const line = lines.shift()!.substring(1).trim();
@@ -243,8 +198,50 @@ export class CSVData {
                 names.set(ids[i], labels[i]);
             }
 
-            config.labels.names = names;
+            config.labels = {
+                innerNodeLayerRange: [1, 2],
+                numTopInnerNodes: 50,
+                numTopWeightNodes: 50,
+                numTopHeightNodes: 50,
+                numTopColorNodes: 50,
+                names: names
+            };
         }
+
+        config.colors = [
+            { identifier: 'emphasis', colorspace: 'hex', value: '#00b0ff' },
+            { identifier: 'auxiliary', colorspace: 'hex', values: ['#00aa5e', '#71237c'] },
+            { identifier: 'inner', colorspace: 'hex', values: ['#e8eaee', '#eef0f4'] },
+            { identifier: 'leaf', preset: 'Oranges', steps: 7 },
+        ];
+
+        config.layout = {
+            algorithm: 'snake',
+            weight: 'bufferView:weights',
+            sort: {
+                key: 'bufferView:weights',
+                algorithm: NodeSort.Algorithm.Keep
+            },
+            parentPadding: { type: 'relative', value: 0.05 },
+            siblingMargin: { type: 'relative', value: 0.05 },
+            accessoryPadding: {
+                type: 'absolute',
+                direction: 'bottom',
+                value: [0.0, 0.02, 0.01, 0.0],
+                relativeAreaThreshold: 0.4, targetAspectRatio: 8.0,
+            },
+        };
+
+        config.geometry = {
+            parentLayer: { showRoot: true },
+            leafLayer: {
+                colorMap: 'color:leaf',
+                height: 'bufferView:heights-normalized',
+                colors: 'bufferView:colors-normalized',
+            },
+            emphasis: { outline: new Array<number>(), highlight: new Array<number>() },
+            heightScale: 0.5,
+        };
 
         config.altered.alter('any');
     }
@@ -266,8 +263,6 @@ export class CSVData {
     static loadAsyncHeader(data: string, header: CSVHeader): Promise<Configuration> {
         return new Promise<Configuration>((resolve, reject) => {
             const config = new Configuration();
-
-            CSVData.initializeConfig(config);
 
             parse(data, {
                 error: (error: any) => reject(error),
