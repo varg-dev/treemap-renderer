@@ -74,7 +74,7 @@ export class ExplicitInnerNodesTreemapExample extends Example {
 
             try {
                 visualization.configuration = config;
-                // visualization.update();
+                visualization.update();
                 renderer.invalidate();
 
                 if (configElement) {
@@ -82,7 +82,22 @@ export class ExplicitInnerNodesTreemapExample extends Example {
                 }
             }
             catch (error) {
-                visualization.configuration = oldConfig;
+                if (oldConfig === undefined) {
+                    return;
+                }
+
+                const rescueConfig = new Configuration();
+
+                rescueConfig.topology = oldConfig.topology;
+                rescueConfig.layout = oldConfig.layout;
+                rescueConfig.buffers = oldConfig.buffers;
+                rescueConfig.bufferViews = oldConfig.bufferViews;
+                rescueConfig.colors = oldConfig.colors;
+                rescueConfig.geometry = oldConfig.geometry;
+                rescueConfig.labels = oldConfig.labels;
+
+                visualization.configuration = rescueConfig;
+                visualization.update();
                 renderer.invalidate();
             }
         };
