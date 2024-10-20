@@ -14,6 +14,7 @@ import { Configuration, Topology, NodeSort } from '../../source/treemap-renderer
 
 
 export class CSVHeader {
+    public csv_delimiter: string;
     public id_column: string;
     public parent_column: string;
     public weight_column: string;
@@ -24,12 +25,11 @@ export class CSVHeader {
 
 
 export class CSVData {
-    protected static readonly CSV_FIELD_DELIMITER = ';';
-
     protected static readonly FAILED = (url: string, request: XMLHttpRequest) =>
         `fetching '${url}' failed (${request.status}): ${request.statusText}`;
 
     protected static initializeHeader(header: CSVHeader): void {
+        header.csv_delimiter = ';';
         header.id_column = 'ids';
         header.parent_column = 'parents';
     }
@@ -85,18 +85,20 @@ export class CSVData {
 
             const [key, value] = line.split('=').map((s: string) => s.trim());
 
-            if (key == 'ids') {
-                header.id_column = value;
+            if (key == 'delimiter') {
+                header.csv_delimiter = value || ';';
+            } else if (key == 'ids') {
+                header.id_column = value || 'ids';
             } else if (key == 'parents') {
-                header.parent_column = value;
+                header.parent_column = value || 'parents';
             } else if (key == 'weights') {
-                header.weight_column = value;
+                header.weight_column = value || '';
             } else if (key == 'heights') {
-                header.height_column = value;
+                header.height_column = value || '';
             } else if (key == 'colors') {
-                header.color_column = value;
+                header.color_column = value || '';
             } else if (key == 'labels') {
-                header.label_column = value;
+                header.label_column = value || '';
             } else {
                 log(LogLevel.Warning, `Unparsed header`, key, '=', value);
             }
@@ -274,7 +276,7 @@ export class CSVData {
 
                     resolve(config);
                 },
-                delimiter: CSVData.CSV_FIELD_DELIMITER,
+                delimiter: header.csv_delimiter,
                 quoteChar: '"',
                 escapeChar: '"',
                 header: true,
