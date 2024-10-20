@@ -1,0 +1,83 @@
+
+extends ../partials/template.pug
+
+include ../partials/code.pug
+
+
+block content
+
+  section.container.mt-5
+    .row
+      .col-12
+        h1
+          | #[span.font-weight-bold #[a(href=base+'index.html') Treemaps]]
+          | &#x2014; Direct Config Treemap
+
+        button.pull-end.btn.btn-primary(type="button")#reload
+          | Reload Page
+
+  section.container.mt-5
+    div.row
+      div.col
+        block canvas
+
+          canvas(id = `canvas`).embed-responsive-item.w-100
+
+  section.container.mt-5
+    div.row
+      div.col
+
+        p.mb-1
+          | CSV Content:
+
+        textarea.form-control#csv-data(rows="25")
+          | {
+          |   "topology": {
+          |       "format": "tupled",
+          |       "semantics": "parent-id-id",
+          |       "edges": [ [ -1, 0 ] ]
+          |   },
+          |   "buffers": [
+          |     {
+          |       "identifier": "source-weights",
+          |       "type": "numbers",
+          |       "data": [ 0.0, 1.0 ],
+          |       "encoding": "native"
+          |     }
+          |   ],
+          |   "bufferViews": [
+          |     {
+          |       "identifier": "weights",
+          |       "source": "buffer:source-weights",
+          |       "transformations": [
+          |           { "type": "fill-invalid", "value": 0.0, "invalidValue": -1.0 },
+          |           { "type": "propagate-up", "operation": "sum" }
+          |       ]
+          |     }
+          |   ],
+          |   "layout": {
+          |       "algorithm": "strip",
+          |       "weight": "bufferView:weights"
+          |   }
+          | }
+
+  section.container.mt-5
+    div.row
+      div.col
+        p.mb-1.mt-1
+          | Prepared Config:
+        pre.alert.alert-secondary
+          code(id = 'config-display',style="user-select: all;")
+
+  section.container.mt-5
+    div.row
+      div.col
+        p.mb-1.mt-1
+          | Direct Link:
+        pre.alert.alert-secondary
+          code(id = 'data-hash',style="user-select: all;")
+
+  section.container.mt-5
+    div.row
+      div.col
+        +code('context-about', ' ', 'WebGL/webgl-operate Information:')
