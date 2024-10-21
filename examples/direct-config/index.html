@@ -32,10 +32,9 @@
             font-family: "Roboto Mono" !important;
         }
     </style>
-  <script type="module" crossorigin src="/treemap-renderer/assets/implicit-BFx4A5ey.js"></script>
+  <script type="module" crossorigin src="/treemap-renderer/assets/direct-Cfe0tn80.js"></script>
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/index-BiAB_f7b.js">
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/example-DQanBt6I.js">
-  <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/papaparse.min-BkD5UZKQ.js">
 </head>
 
 <body>
@@ -43,21 +42,42 @@
 branch <code id="branch">branch</code>,
 commit <code id="commit">commit</code>.</p><p class="mt-4">WebGL <span class="font-weight-bold">About Page</span>: <a href="https://webgl-operate.org/about.html">webgl-operate.org/about.html</a>
 &emsp;|&emsp;WebGL <span class="font-weight-bold">Operate</span>: <a href="https://webgl-operate.org">webgl-operate.org</a></p></div></div></section><section class="container mt-5"><div class="row"><div class="col-12"><h1><span class="font-weight-bold"><a href="/treemap-renderer/index.html">Treemaps</a></span>
-&#x2014; Implicit Inner Nodes Treemap</h1><button class="pull-end btn btn-primary" type="button" id="reload">Reload Page</button></div></div></section><section class="container mt-5"><div class="row"><div class="col"><canvas class="embed-responsive-item w-100" id="canvas"></canvas></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">CSV Content:</p><textarea class="form-control" id="csv-data" rows="25"># delimiter=;
-# paths=path
-# weights=a
-# heights=b
-# colors=c
-# labels=name
-path;name;a;b;c
-a/e;e;0.125;0.1;0.0
-a/f;f;0.25;0.1;0.1
-b/g;g;0.125;0.3;0.1
-b/h;h;0.125;0.2;0.6
-c/i;i;0.5;0.1;0.7
-c/j;j;0.125;0.1;1.0
-d/k;k;0.5;0.1;0.0
-d/l;l;0.5;0.2;0.0</textarea></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Prepared Config:</p><pre class="alert alert-secondary"><code id="config-display" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Direct Link:</p><pre class="alert alert-secondary"><code id="data-hash" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">WebGL/webgl-operate Information:<pre class="alert alert-secondary"><code id="context-about"> </code></pre></p></div></div></section><footer><div class="row text-center"><div class="col-12"><p class="mt-5 mb-4">&copy; 2022&thinsp;&ndash;&thinsp;<span id="cryear"></span></p></div></div></footer>
+&#x2014; Direct Config Treemap</h1><button class="pull-end btn btn-primary" type="button" id="reload">Reload Page</button></div></div></section><section class="container mt-5"><div class="row"><div class="col"><canvas class="embed-responsive-item w-100" id="canvas"></canvas></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">Config Content:</p><textarea class="form-control" id="csv-data" rows="25">{
+  "topology": {
+      "format": "tupled",
+      "semantics": "parent-id-id",
+      "edges": [ [ -1, 0 ], [0, 1], [0,2], [0,3] ]
+  },
+  "buffers": [
+    {
+      "identifier": "source-weights",
+      "type": "numbers",
+      "data": [ 0.0, 0.0, 1.0, 2.0, 1.0 ],
+      "encoding": "native"
+    }
+  ],
+  "bufferViews": [
+    {
+      "identifier": "weights",
+      "source": "buffer:source-weights",
+      "transformations": [
+          { "type": "fill-invalid", "value": 0.0, "invalidValue": -1.0 },
+          { "type": "propagate-up", "operation": "sum" }
+      ]
+    }
+  ],
+  "layout": {
+      "algorithm": "strip",
+      "weight": "bufferView:weights",
+      "parentPadding": { "type": "relative", "value": 0.05 },
+      "siblingMargin": { "type": "relative", "value": 0.05 }
+  },
+  "geometry": {
+    "parentLayer": {
+      "showRoot": false
+    }
+  }
+}</textarea></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Prepared Config:</p><pre class="alert alert-secondary"><code id="config-display" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Direct Link:</p><pre class="alert alert-secondary"><code id="data-hash" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">WebGL/webgl-operate Information:<pre class="alert alert-secondary"><code id="context-about"> </code></pre></p></div></div></section><footer><div class="row text-center"><div class="col-12"><p class="mt-5 mb-4">&copy; 2022&thinsp;&ndash;&thinsp;<span id="cryear"></span></p></div></div></footer>
 
 
 </body>
