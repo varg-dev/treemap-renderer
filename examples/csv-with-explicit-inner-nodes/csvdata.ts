@@ -233,7 +233,7 @@ export class CSVData {
         };
 
         config.geometry = {
-            parentLayer: { showRoot: true },
+            parentLayer: { showRoot: false },
             leafLayer: {
                 colorMap: 'color:leaf',
                 height: 'bufferView:heights-normalized',

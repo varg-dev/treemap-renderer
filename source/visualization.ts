@@ -96,14 +96,11 @@ export class Visualization {
         const geometryConfig = config.geometry;
         const altered = config.altered.geometry;
 
-        console.log("applyInnerNodeColorMapping")
-
         assert(this._geometry.innerNodeColors !== undefined || altered.any,
             `expected any alteration when inner-node color mapping is yet to be defined`);
 
         /* @todo: also update when color table has changed (e.g., number of colors changed). */
         if (!altered.any && !config.altered.topology) {
-            console.log("Early return of applyInnerNodeColorMapping; !altered.any && !config.altered.topology")
             return;
         }
 
@@ -130,11 +127,8 @@ export class Visualization {
         const geometryConfig = config.geometry;
         const altered = config.altered.geometry;
 
-        console.log("applyLeafNodeColorMapping")
-
         /* @todo: also update when color table has changed (e.g., number of colors changed). */
         if (!altered.any && !config.altered.topology) {
-            console.log("Early return of applyLeafNodeColorMapping; !altered.any && !config.altered.topology")
 
             return;
         }
@@ -158,15 +152,11 @@ export class Visualization {
             this._geometry.leafNodeColors = GeometryCreation.defaultLeafNodeColors(
                 this._intermediaries.topology, this._colorLUT.leafColorOffset);
 
-            console.log("Early return of applyLeafNodeColorMapping; !hasLeafLayer; defaulted leaf node colors")
-
             return;
         }
 
         /* Skip color mapping if nothing has changed and colors were previously mapped. */
         if (!altered.colors && this._geometry.leafNodeColors !== undefined) {
-            console.log("Early return of applyLeafNodeColorMapping; !altered.colors && this._geometry.leafNodeColors !== undefined")
-
             return;
         }
 
@@ -206,8 +196,6 @@ export class Visualization {
 
         const layout = Layout.createLayout(tree, weights, configuration.layout, accessorySpaces,
             labelRects, labelPaddingSpaces);
-
-        console.log("createLayout")
 
         return layout;
     }
@@ -277,7 +265,7 @@ export class Visualization {
             if (this._geometry.initialized) {
                 this._geometry.uninitialize();
             }
-            console.log("Early return from Visualization.update:", true)
+
             return true;
         }
 
@@ -288,8 +276,6 @@ export class Visualization {
         if (!altered.any) {
             // Should not be required as nothing has changed
             // config.altered.reset();
-
-            console.log("Early return from Visualization.update:", false)
 
             return false;
         }
@@ -309,8 +295,6 @@ export class Visualization {
         let layout: Array<Rect> | undefined = undefined;
 
         if (altered.topology) {
-            console.log("Initialize Topology")
-
             tree.initialize(config.topology.format as Topology.InputFormat,
                 config.topology.semantics as Topology.InputSemantics,
                 config.topology.edges);
@@ -340,8 +324,6 @@ export class Visualization {
 
         let weightBuffer = this._intermediaries.aggregatedWeights;
         if (weightBuffer === undefined || altered.layout.weight) {
-            console.log("Initialize Weight Buffer")
-
             weightBuffer = this._intermediaries.aggregatedWeights =
                 this._bufferResolver.resolve(config.layout.weight, config, this._normalization)!;
 
@@ -370,9 +352,6 @@ export class Visualization {
         let labelPaddingSpaces = this._intermediaries.labelPaddingSpaces;
 
         if (layout === undefined || altered.layout.any) {
-
-            console.log("Initialize Layout")
-
             accessorySpaces = this._intermediaries.accessorySpaces =
                 new Array<Rect>(tree.numberOfInnerNodes);
             labelRects = this._intermediaries.labelRects =
@@ -392,23 +371,19 @@ export class Visualization {
         //
 
         if (this._geometry.innerNodeIndices === undefined) {
-            console.log("Initialize Inner Node Indices")
             this._geometry.innerNodeIndices = NodeIndices.innerNodes(tree);
         }
 
         if (this._geometry.leafNodeIndices === undefined) {
-            console.log("Initialize Leaf Node Indices")
             this._geometry.leafNodeIndices = NodeIndices.leafNodes(tree);
         }
 
         if (this._geometry.innerNodeLayouts === undefined) {
-            console.log("Initialize Inner Node Layouts")
             this._geometry.innerNodeLayouts = GeometryCreation.createParentLayoutBuffer(tree, layout,
                 this._configuration.geometry);
         }
 
         if (this._geometry.leafNodeLayouts === undefined) {
-            console.log("Initialize Leaf Node Layouts")
             this._geometry.leafNodeLayouts = GeometryCreation.createLeafLayoutBuffer(tree, layout,
                 this._configuration.geometry);
         }
@@ -538,13 +513,14 @@ export class Visualization {
             this._colorLUT = new ColorTable(emphasisColor as Color, auxiliaryColor as Array<Color>,
                 innerColor as Array<Color>, leafColor as Array<Color>);
 
-            if (!this._geometry.colorTable
-                || this._geometry.colorTable.length !== this._colorLUT.bits.length) {
-                this._geometry.altered.alter('colorTableLength');
-                this._renderer.invalidate();
-            }
+            this._geometry.colorTable = undefined;
+        }
 
+        if (!this._geometry.colorTable || this._geometry.colorTable.length !== this._colorLUT.bits.length) {
             this._geometry.colorTable = this._colorLUT.bits;
+
+            this._geometry.altered.alter('colorTableLength');
+            this._renderer.invalidate();
         }
 
         /* Color Mapping */
@@ -585,7 +561,7 @@ export class Visualization {
             this._geometry.altered.alter('emphasisOutlineWidth');
         }
 
-        this._geometry.showRoot = config.geometry.parentLayer?.showRoot!;
+        this._geometry.showRoot = config.geometry.parentLayer?.showRoot ? true : false;
 
         /** @todo refine and move this to height buffer creation, similar to color buffer creation  */
         let heights = undefined;

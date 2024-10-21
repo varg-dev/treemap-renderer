@@ -35,13 +35,13 @@ block content
           |   "topology": {
           |       "format": "tupled",
           |       "semantics": "parent-id-id",
-          |       "edges": [ [ -1, 0 ] ]
+          |       "edges": [ [ -1, 0 ], [0, 1], [0,2], [0,3] ]
           |   },
           |   "buffers": [
           |     {
           |       "identifier": "source-weights",
           |       "type": "numbers",
-          |       "data": [ 0.0, 1.0 ],
+          |       "data": [ 0.0, 0.0, 1.0, 2.0, 1.0 ],
           |       "encoding": "native"
           |     }
           |   ],
@@ -57,7 +57,14 @@ block content
           |   ],
           |   "layout": {
           |       "algorithm": "strip",
-          |       "weight": "bufferView:weights"
+          |       "weight": "bufferView:weights",
+          |       "parentPadding": { "type": "relative", "value": 0.05 },
+          |       "siblingMargin": { "type": "relative", "value": 0.05 }
+          |   },
+          |   "geometry": {
+          |     "parentLayer": {
+          |       "showRoot": false
+          |     }
           |   }
           | }
 

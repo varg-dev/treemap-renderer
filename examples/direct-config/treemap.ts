@@ -71,7 +71,6 @@ export class DirectConfigTreemapExample extends Example {
             let configData = {};
 
             try {
-                console.log("Parse JSON");
                 configData = JSON.parse(configString);
             } catch (error) {
                 console.log(error);
@@ -82,7 +81,6 @@ export class DirectConfigTreemapExample extends Example {
             const oldConfig = visualization.configuration;
 
             try {
-                console.log("Derive new Config");
                 const config = new Configuration();
 
                 if (oldConfig !== undefined) {
@@ -103,24 +101,18 @@ export class DirectConfigTreemapExample extends Example {
                 config.geometry = (configData as Configuration).geometry || {};
                 config.labels = (configData as Configuration).labels || {};
 
-                console.log("Apply new Config");
                 visualization.configuration = config;
                 visualization.update();
                 renderer.invalidate();
-                console.log("Applied new Config");
 
                 if (configElement) {
                     configElement.textContent = JSON.stringify(config.toJSON(), null, 2);
                 }
             }
             catch (error) {
-                console.log("Error with new Config");
-
                 if (oldConfig === undefined) {
                     return;
                 }
-
-                console.log("Apply rescue Config");
 
                 const rescueConfig = new Configuration();
 
@@ -135,8 +127,6 @@ export class DirectConfigTreemapExample extends Example {
                 visualization.configuration = rescueConfig;
                 visualization.update();
                 renderer.invalidate();
-
-                console.log("Applied rescue Config");
             }
         };
 
