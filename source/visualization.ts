@@ -129,6 +129,7 @@ export class Visualization {
 
         /* @todo: also update when color table has changed (e.g., number of colors changed). */
         if (!altered.any && !config.altered.topology) {
+
             return;
         }
 
@@ -264,6 +265,7 @@ export class Visualization {
             if (this._geometry.initialized) {
                 this._geometry.uninitialize();
             }
+
             return true;
         }
 
@@ -322,7 +324,6 @@ export class Visualization {
 
         let weightBuffer = this._intermediaries.aggregatedWeights;
         if (weightBuffer === undefined || altered.layout.weight) {
-
             weightBuffer = this._intermediaries.aggregatedWeights =
                 this._bufferResolver.resolve(config.layout.weight, config, this._normalization)!;
 
@@ -351,7 +352,6 @@ export class Visualization {
         let labelPaddingSpaces = this._intermediaries.labelPaddingSpaces;
 
         if (layout === undefined || altered.layout.any) {
-
             accessorySpaces = this._intermediaries.accessorySpaces =
                 new Array<Rect>(tree.numberOfInnerNodes);
             labelRects = this._intermediaries.labelRects =
@@ -513,13 +513,14 @@ export class Visualization {
             this._colorLUT = new ColorTable(emphasisColor as Color, auxiliaryColor as Array<Color>,
                 innerColor as Array<Color>, leafColor as Array<Color>);
 
-            if (!this._geometry.colorTable
-                || this._geometry.colorTable.length !== this._colorLUT.bits.length) {
-                this._geometry.altered.alter('colorTableLength');
-                this._renderer.invalidate();
-            }
+            this._geometry.colorTable = undefined;
+        }
 
+        if (!this._geometry.colorTable || this._geometry.colorTable.length !== this._colorLUT.bits.length) {
             this._geometry.colorTable = this._colorLUT.bits;
+
+            this._geometry.altered.alter('colorTableLength');
+            this._renderer.invalidate();
         }
 
         /* Color Mapping */
@@ -560,7 +561,7 @@ export class Visualization {
             this._geometry.altered.alter('emphasisOutlineWidth');
         }
 
-        this._geometry.showRoot = config.geometry.parentLayer?.showRoot!;
+        this._geometry.showRoot = config.geometry.parentLayer?.showRoot ? true : false;
 
         /** @todo refine and move this to height buffer creation, similar to color buffer creation  */
         let heights = undefined;

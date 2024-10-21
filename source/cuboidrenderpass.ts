@@ -12,6 +12,9 @@ import {
     Shader,
 } from 'webgl-operate';
 
+const log = auxiliaries.log;
+const LogLevel = auxiliaries.LogLevel;
+
 import { CuboidGeometry } from './cuboidgeometry';
 import { MultiRenderTarget } from './multirendertarget';
 import { Topology } from './topology';
@@ -195,6 +198,7 @@ export class CuboidRenderPass extends Initializable {
     @Initializable.assert_initialized()
     protected relink(): void {
         if (this._colorTable === undefined) {
+            log(LogLevel.Warning, "Color table is not defined. Could not compile shaders.");
             return;
         }
 

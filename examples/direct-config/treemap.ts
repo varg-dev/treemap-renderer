@@ -67,11 +67,31 @@ export class DirectConfigTreemapExample extends Example {
         const canvas = this._canvas as gloperate.Canvas;
         const visualization = this._visualization;
 
-        const loadConfig = (configData: object) => {
+        const loadConfig = (configString: string) => {
+            let configData = {};
+
+            try {
+                configData = JSON.parse(configString);
+            } catch (error) {
+                console.log(error);
+
+                return;
+            }
+
             const oldConfig = visualization.configuration;
 
             try {
                 const config = new Configuration();
+
+                if (oldConfig !== undefined) {
+                    config.topology = oldConfig.topology;
+                    config.layout = oldConfig.layout;
+                    config.buffers = oldConfig.buffers;
+                    config.bufferViews = oldConfig.bufferViews;
+                    config.colors = oldConfig.colors;
+                    config.geometry = oldConfig.geometry;
+                    config.labels = oldConfig.labels;
+                }
 
                 config.topology = (configData as Configuration).topology || {};
                 config.layout = (configData as Configuration).layout || {};
@@ -134,7 +154,7 @@ export class DirectConfigTreemapExample extends Example {
             dataElement.oninput = (event) => {
                 const testdata = dataElement.value;
 
-                loadConfig(JSON.parse(testdata));
+                loadConfig(testdata);
 
                 if (hashElement) {
                     hashElement.textContent = this.obtainUrl(btoa(testdata));

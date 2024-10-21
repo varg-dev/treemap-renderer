@@ -94,8 +94,6 @@ export class Configuration {
             parentLayer: false,
         },
         labels: false,
-        // colorScheme: false,
-        animations: false,
     });
 
     /** @see {@link topology} */
@@ -137,9 +135,9 @@ export class Configuration {
         const schema = Configuration.TREEMAP_SCHEMA.properties.topology;
         /* Skip validation on this interleaved or tupled array due to crazy performance impact. This
         seems to be an issue within the jsonschema package (not webgl-operate). */
-        // if (!properties.validate(topology, schema, [])) {
-        //     return;
-        // }
+        if (!properties.validate(topology, schema, [])) {
+            return;
+        }
         properties.complement(topology, schema);
         properties.compare(topology, this._topology, this._altered, 'topology');
         this._topology = topology;
@@ -248,7 +246,7 @@ export class Configuration {
     public labelsToJSON(): object {
         const labels = Object.assign({}, this._labels);
 
-        if (typeof labels.names !== "string") {
+        if (labels.names && typeof labels.names !== "string") {
             (labels.names as object) = Object.fromEntries(this._labels.names as Map<number, string>);
         }
 

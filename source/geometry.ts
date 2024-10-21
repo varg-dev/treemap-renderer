@@ -234,7 +234,9 @@ export class Geometry extends Initializable {
     }
 
     set leafNodeAreaScales(leafNodeAreaScales: Uint8Array | undefined) {
+        this.assertInitialized();
         this._leafNodeAreaScales = leafNodeAreaScales;
+        this._altered.alter('leafNodeAreaScales');
     }
 
     get leafNodeColors(): Uint8Array | undefined {
@@ -242,7 +244,9 @@ export class Geometry extends Initializable {
     }
 
     set leafNodeColors(leafNodeColors: Uint8Array | undefined) {
+        this.assertInitialized();
         this._leafNodeColors = leafNodeColors;
+        this._altered.alter('leafNodeColors');
     }
 
     set colorTable(colorTable: Float32Array | undefined) {
@@ -259,7 +263,9 @@ export class Geometry extends Initializable {
     }
 
     set leafNodeHeights(leafNodeHeights: Uint8Array | undefined) {
+        this.assertInitialized();
         this._leafNodeHeights = leafNodeHeights;
+        this._altered.alter('leafNodeHeights');
     }
 
 
@@ -311,7 +317,7 @@ export class Geometry extends Initializable {
 
     set showRoot(show: boolean) {
         this.assertInitialized();
-        this._showRoot = show;
+        this._showRoot = show ? true : false;
         this._altered.alter('any');
     }
     get showRoot(): boolean {

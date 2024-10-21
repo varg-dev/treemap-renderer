@@ -333,7 +333,7 @@ export class QuadRenderPass extends Initializable {
     }
 
     set showRoot(show: boolean) {
-        this._showRoot = show;
+        this._showRoot = show ? true : false;
     }
 
     set topology(topology: Topology) {

@@ -240,6 +240,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
      */
     private renderInnerNodes(target: Framebuffer, attachment: MultiRenderTarget.Attachment,
         depthMask: boolean): void {
+
         if (!this._geometry.valid) {
             return;
         }
@@ -259,6 +260,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
      */
     private renderLeafNodes(target: Framebuffer, attachment: MultiRenderTarget.Attachment,
         depthMask: boolean): void {
+
         if (!this._geometry.valid) {
             return;
         }
@@ -663,6 +665,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
                 break;
             }
         }
+
         return changed || labelsChanged || this._altered.any || this._camera.altered;
     }
 
@@ -702,6 +705,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
         }
 
         if (this._geometry.altered.colorTableLength) {
+
             this._leafPass.colorTableLengthAltered();
         }
 
@@ -843,6 +847,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
         /* Avoid blitting before everything is initialized. */
         if (!this._accumulationPass.initialized || !this._accumulationPass.framebuffer?.initialized
             || !this._blitPass.initialized) {
+
             return;
         }
         const blit = this._blitPass;
