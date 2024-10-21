@@ -94,8 +94,6 @@ export class Configuration {
             parentLayer: false,
         },
         labels: false,
-        // colorScheme: false,
-        animations: false,
     });
 
     /** @see {@link topology} */
@@ -137,9 +135,10 @@ export class Configuration {
         const schema = Configuration.TREEMAP_SCHEMA.properties.topology;
         /* Skip validation on this interleaved or tupled array due to crazy performance impact. This
         seems to be an issue within the jsonschema package (not webgl-operate). */
-        // if (!properties.validate(topology, schema, [])) {
-        //     return;
-        // }
+        if (!properties.validate(topology, schema, [])) {
+            console.log("Keep", this._topology);
+            return;
+        }
         properties.complement(topology, schema);
         properties.compare(topology, this._topology, this._altered, 'topology');
         this._topology = topology;
@@ -153,6 +152,7 @@ export class Configuration {
     set buffers(buffers: Configuration.Buffers) {
         const schema = Configuration.TREEMAP_SCHEMA.properties.buffers;
         if (!properties.validate(buffers, schema, [])) {
+            console.log("Keep", this._buffers);
             return;
         }
         properties.complement(buffers, schema);
@@ -169,6 +169,7 @@ export class Configuration {
         const schema = Configuration.TREEMAP_SCHEMA.properties.bufferViews;
         if (!properties.validate(bufferViews, schema,
             [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']])) {
+            console.log("Keep", this._bufferViews);
             return;
         }
         properties.complement(bufferViews, schema);
@@ -185,6 +186,7 @@ export class Configuration {
         const schema = Configuration.TREEMAP_SCHEMA.properties.colors;
         if (!properties.validate(colors, schema,
             [[Configuration.COLOR_REFERENCE_SCHEMA, '/ColorReference']])) {
+            console.log("Keep", this._colors);
             return;
         }
         properties.complement(colors, schema);
@@ -201,6 +203,7 @@ export class Configuration {
         const schema = Configuration.TREEMAP_SCHEMA.properties.layout;
         if (!properties.validate(layout, schema,
             [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']])) {
+            console.log("Keep", this._layout);
             return;
         }
         properties.complement(layout, schema);
@@ -219,6 +222,7 @@ export class Configuration {
             [Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference'],
             [Configuration.COLOR_REFERENCE_SCHEMA, '/ColorReference'],
             [Configuration.COLOR_SCHEMA_SCHEMA, '/ColorScheme']])) {
+            console.log("Keep", this._geometry);
             return;
         }
         properties.complement(geometry, schema);
@@ -234,6 +238,7 @@ export class Configuration {
         const schema = Configuration.TREEMAP_SCHEMA.properties.labels;
         if (!properties.validate(labels, schema,
             [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']])) {
+            console.log("Keep", this._labels);
             return;
         }
         properties.complement(labels, schema);
@@ -248,7 +253,7 @@ export class Configuration {
     public labelsToJSON(): object {
         const labels = Object.assign({}, this._labels);
 
-        if (typeof labels.names !== "string") {
+        if (labels.names && typeof labels.names !== "string") {
             (labels.names as object) = Object.fromEntries(this._labels.names as Map<number, string>);
         }
 

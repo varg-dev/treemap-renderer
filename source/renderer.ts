@@ -240,7 +240,10 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
      */
     private renderInnerNodes(target: Framebuffer, attachment: MultiRenderTarget.Attachment,
         depthMask: boolean): void {
+        console.log("Rendering inner nodes");
+
         if (!this._geometry.valid) {
+            console.log("Skip rendering inner nodes; !this._geometry.valid");
             return;
         }
         this._innerPass.target = target;
@@ -259,7 +262,10 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
      */
     private renderLeafNodes(target: Framebuffer, attachment: MultiRenderTarget.Attachment,
         depthMask: boolean): void {
+        console.log("Rendering leaf nodes");
+
         if (!this._geometry.valid) {
+            console.log("Skip rendering leaf nodes; !this._geometry.valid");
             return;
         }
 
@@ -268,6 +274,8 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
             this._leafPass.attachment = attachment;
             this._leafPass.depthMask = depthMask;
             this._leafPass.frame();
+        } else {
+            console.log("Skip rendering inner nodes; !this._geometry.leafNodeHeights");
         }
     }
 
@@ -646,6 +654,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
         let changed = false;
         try {
             changed = this._visualization.update();
+            console.log("Updated visualization. Changed:", changed);
         } catch (error) {
             log(LogLevel.Error, error);
         }
@@ -663,6 +672,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
                 break;
             }
         }
+
         return changed || labelsChanged || this._altered.any || this._camera.altered;
     }
 
@@ -675,6 +685,8 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
      */
     protected onPrepare(): void {
 
+        console.log("Prepare Frame");
+
         /* @todo refine this lazy checking - this is not how it should be. Instead, a specific task
         should be invoked for every specific alteration. If the topology changes it should cause the
         all specific parts of the geometry to have changed ... so more refined alteration tracking on
@@ -682,6 +694,8 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
 
         /* Check for topology changes. */
         if (this._geometry.altered.any && this._geometry.valid) {
+
+            console.log("Update Geometry to GPU Buffers");
 
             this._innerPass.ids = this._geometry.innerNodeIndices!;
             this._innerPass.layout = this._geometry.innerNodeLayouts!;
@@ -702,6 +716,9 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
         }
 
         if (this._geometry.altered.colorTableLength) {
+
+            console.log("Update Color Table");
+
             this._leafPass.colorTableLengthAltered();
         }
 
@@ -745,6 +762,8 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
             this._multiRenderTarget.setClearColor(this._clearColor);
         }
 
+        console.log("Update render passes");
+
         this._innerPass.update();
         this._leafPass.update();
 
@@ -756,6 +775,8 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
 
         this._accumulationPass.update();
         this._readbackPass.frame();
+
+        console.log("Prepare Visualization");
 
         /** @todo this should be removed with new labeling (labeling will be applied in renderer). */
         this._visualization.prepare();
@@ -774,6 +795,8 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
     protected onFrame(frameNumber: number): void {
         const gl = this._context.gl;
         const gl2facade = this._context.gl2facade;
+
+        console.log("Frame");
 
         /* Gather anti-aliasing offset for anti-aliasing via accumulation (multi-frame-rendering). */
         const ndcOffset = this._ndcOffsetKernel.get(frameNumber) as [number, number];
@@ -807,7 +830,12 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
             gl2facade.drawBuffers!([gl2facade.COLOR_ATTACHMENT0, gl2facade.COLOR_ATTACHMENT1]);
         }
 
+        console.log("Render Leaf Nodes");
+
         this.renderLeafNodes(target, mrt.drawRestricted ? atch.Color : atch.Undefined, true);
+
+        console.log("Render Inner Nodes");
+
         this.renderInnerNodes(target, mrt.drawRestricted ? atch.Color : atch.Undefined, true);
 
         // Configure the draw buffers for color rendering only
@@ -836,6 +864,8 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
             this.renderInnerNodes(mrt.depthFBO, atch.Depth, false);
         }
 
+        console.log("Accumulation Pass:", frameNumber);
+
         this._accumulationPass.frame(frameNumber);
     }
 
@@ -843,6 +873,9 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
         /* Avoid blitting before everything is initialized. */
         if (!this._accumulationPass.initialized || !this._accumulationPass.framebuffer?.initialized
             || !this._blitPass.initialized) {
+
+            console.log("Skip Swap");
+
             return;
         }
         const blit = this._blitPass;
@@ -850,6 +883,9 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
         blit.framebuffer = this._accumulationPass.framebuffer!;
         blit.readBuffer = this._context.gl2facade.COLOR_ATTACHMENT0;
         blit.frame();
+
+        console.log("Swapped");
+
     }
 
     /**
