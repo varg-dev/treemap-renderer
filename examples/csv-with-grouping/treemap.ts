@@ -82,6 +82,8 @@ export class GroupedTreemapExample extends Example {
                 }
             }
             catch (error) {
+                console.log(error);
+
                 if (oldConfig === undefined) {
                     return;
                 }

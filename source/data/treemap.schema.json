@@ -338,7 +338,7 @@
                     { "$ref": "/BufferReference" },
                     {
                         "type": "object",
-                        "additionalProperties": { "type": "number" }
+                        "additionalProperties": { "type": "string" }
                     }
                 ] },
                 "additionallyLabelSet": { "type": "array", "items": { "type": "number", "minimum": 0 } },

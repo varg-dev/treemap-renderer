@@ -92,6 +92,7 @@ export class Configuration {
             /* @todo the following properties alteration trackers are currently not used. These should
             be used as soon as possible in order to make partial updates as fast as possible ... */
             parentLayer: false,
+            leafLayer: false,
         },
         labels: false,
     });
@@ -236,6 +237,11 @@ export class Configuration {
         }
         properties.complement(labels, schema);
         properties.compare(labels, this._labels, this._altered, 'labels');
+
+        if ('names' in labels && typeof labels.names == "object") {
+            labels.names = new Map<number, string>(Object.entries(labels.names).map((entry) => [Number.parseFloat(entry[0]), entry[1] as string]));
+        }
+
         this._labels = labels;
     }
 

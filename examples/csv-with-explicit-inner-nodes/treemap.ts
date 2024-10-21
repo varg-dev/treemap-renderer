@@ -82,6 +82,8 @@ export class ExplicitInnerNodesTreemapExample extends Example {
                 }
             }
             catch (error) {
+                console.log(error);
+
                 if (oldConfig === undefined) {
                     return;
                 }
