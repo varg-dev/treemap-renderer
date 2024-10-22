@@ -238,8 +238,12 @@ export class Configuration {
         properties.complement(labels, schema);
         properties.compare(labels, this._labels, this._altered, 'labels');
 
-        if ('names' in labels && typeof labels.names == "object") {
-            labels.names = new Map<number, string>(Object.entries(labels.names).map((entry) => [Number.parseFloat(entry[0]), entry[1] as string]));
+        if ('names' in labels && typeof labels.names == "object" && !(labels.names instanceof Map)) {
+            labels.names = new Map<number, string>(
+                Object.entries(labels.names).map(
+                    (entry) => [Number.parseFloat(entry[0]), entry[1] as string]
+                )
+            );
         }
 
         this._labels = labels;
