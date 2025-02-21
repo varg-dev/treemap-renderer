@@ -363,17 +363,19 @@ export class LabelManagement {
         innerNodeLabelDepthRange: [number, number], numTopInnerNodes: number,
         numTopWeightNodes: number, numTopHeightNodes: number, numTopColorNodes: number): Set<number> {
 
-        const candidates = new Set<number>(additionallyLabelSet);
+        const candidates = new Set<number>();
 
         // gather top N values (with node ID) by visual variable
         const topInnerNodeWeights = new Array<LabelCandidate>(numTopInnerNodes);
         const topWeights = new Array<LabelCandidate>(numTopWeightNodes);
         const topHeights = new Array<LabelCandidate>(numTopHeightNodes);
         const topColors = new Array<LabelCandidate>(numTopColorNodes);
+        const topAdditionalCandidates = new Array<LabelCandidate>(1);
         topInnerNodeWeights.fill({ nodeId: undefined, value: -1 });
         topWeights.fill({ nodeId: undefined, value: -1 });
         topHeights.fill({ nodeId: undefined, value: -1 });
         topColors.fill({ nodeId: undefined, value: -1 });
+        topAdditionalCandidates.fill({ nodeId: undefined, value: -1 });
 
         // label inner nodes
         tree.parentsDoUntilDepth(innerNodeLabelDepthRange[1], (node: Node) => {
@@ -403,6 +405,11 @@ export class LabelManagement {
         addNodeIDsToCandidates(candidates, topWeights);
         addNodeIDsToCandidates(candidates, topHeights);
         addNodeIDsToCandidates(candidates, topColors);
+
+        const set_iter = additionallyLabelSet.entries();
+        for (const entry of set_iter) {
+            candidates.add(entry[1]);
+        }
 
         return candidates;
     }

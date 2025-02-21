@@ -429,33 +429,37 @@ export class AdaptiveLabelPlacement {
      */
     protected static prepareLeafLabels(labels: Projected3DLabel[], camera: Camera): LeafLabel[] {
         const leafLabels: LeafLabel[] = [];
-        for (const leafLabel of labels) {
-            if (leafLabel) {
-                const anchor = vec4.fromValues(
-                    leafLabel.position[0], leafLabel.position[1], leafLabel.position[2], 1);
-                vec4.transformMat4(anchor, anchor, camera.viewProjection);
 
-                // perspective transformation: homogeneous coordiates to get actual screen position
-                const w = anchor[3];
-                const screenPosition = vec2.fromValues(anchor[0] / w, anchor[1] / w);
-
-                // As priority, we choose the height of the label position, since the height of the code
-                // unit (that is labeled) maps to a metric value: the higher, the more important.
-                // The algorithm expects a priority in range [1, 10]. Since the height tends to be in
-                // range [0, 1], we transform.
-                leafLabels.push({
-                    label: leafLabel,
-                    pointLocation: screenPosition,
-                    priority: leafLabel.position[1] * 9.0 + 1.0,
-                    placement: {
-                        offset: vec2.create(),
-                        alignment: leafLabel.alignment,
-                        lineAnchor: leafLabel.lineAnchor,
-                        display: true,
-                    },
-                });
+        labels.forEach((leafLabel, index) => {
+            if (!leafLabel) {
+                return;
             }
-        }
+
+            const anchor = vec4.fromValues(
+                leafLabel.position[0], leafLabel.position[1], leafLabel.position[2], 1);
+            vec4.transformMat4(anchor, anchor, camera.viewProjection);
+
+            // perspective transformation: homogeneous coordiates to get actual screen position
+            const w = anchor[3];
+            const screenPosition = vec2.fromValues(anchor[0] / w, anchor[1] / w);
+
+            // As priority, we choose the height of the label position, since the height of the code
+            // unit (that is labeled) maps to a metric value: the higher, the more important.
+            // The algorithm expects a priority in range [1, 10]. Since the height tends to be in
+            // range [0, 1], we transform.
+            leafLabels.push({
+                label: leafLabel,
+                pointLocation: screenPosition,
+                priority: (leafLabel.position[1] * 9.0 + 1.0) + 10*(index+1)/(labels.length),
+                placement: {
+                    offset: vec2.create(),
+                    alignment: leafLabel.alignment,
+                    lineAnchor: leafLabel.lineAnchor,
+                    display: true,
+                },
+            });
+        });
+
         return leafLabels;
     }
 
