@@ -260,6 +260,11 @@ export class Configuration {
             (labels.names as object) = Object.fromEntries(this._labels.names as Map<number, string>);
         }
 
+        // Needed ?
+        // if (labels.additionallyLabelSet && typeof labels.additionallyLabelSet !== "string") {
+        //     (labels.additionallyLabelSet as Array<number>) = Array.from((this._labels.additionallyLabelSet as Set<number>).values());
+        // }
+
         return labels;
     }
 
@@ -464,6 +469,7 @@ export namespace Configuration {
         numTopWeightNodes?: number;
         numTopHeightNodes?: number;
         numTopColorNodes?: number;
+        additionallyLabelSet?: BufferIdentifier | Set<number>;
     }
 
 }

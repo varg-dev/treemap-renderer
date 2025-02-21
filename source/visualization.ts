@@ -613,10 +613,20 @@ export class Visualization {
                     names = config.labels.names as Map<number, string>;
                 }
 
+                let additionallyLabelSet: Set<number> = new Set<number>();
+                if (typeof config.labels.additionallyLabelSet === "string") {
+                    additionallyLabelSet = AttributeBuffer.create(tree, this._normalization, config.labels.additionallyLabelSet,
+                        config) as any as Set<number>;
+                } else {
+                    additionallyLabelSet = config.labels.additionallyLabelSet!;
+                }
+
+                console.log(additionallyLabelSet, names);
+
                 if (names !== undefined && this._intermediaries.aggregatedHeights &&
                     this._intermediaries.aggregatedWeights && this._intermediaries.aggregatedColors) {
                     const nodeIdsToLabel = LabelManagement.createLabelSelection(tree, this._intermediaries.aggregatedWeights,
-                        this._intermediaries.aggregatedHeights, this._intermediaries.aggregatedColors, new Set<number>(),
+                        this._intermediaries.aggregatedHeights, this._intermediaries.aggregatedColors, additionallyLabelSet,
                         config.labels.innerNodeLayerRange!, config.labels.numTopInnerNodes!,
                         config.labels.numTopWeightNodes!, config.labels.numTopHeightNodes!, config.labels.numTopColorNodes!)
 
