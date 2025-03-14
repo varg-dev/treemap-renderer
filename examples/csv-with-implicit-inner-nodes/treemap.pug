@@ -15,6 +15,11 @@ block content
         button.pull-end.btn.btn-primary(type="button")#reload
           | Reload Page
 
+        div Select a color scheme:
+        select(onchange="updateColorScheme(this.value)")
+          option(value="sequential" selected) Sequential
+          option(value="qualitative") Qualitative
+
   section.container.mt-5
     div.row
       div.col

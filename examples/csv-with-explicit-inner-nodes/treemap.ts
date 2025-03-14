@@ -130,6 +130,9 @@ export class ExplicitInnerNodesTreemapExample extends Example {
 
                 CSVData.loadAsync(testdata)
                     .then((config: Configuration) => {
+
+                        config.colors[3] = { identifier: 'leaf', preset: 'Pastel1', steps: 7 }
+
                         loadConfig(config);
 
                         if (hashElement) {

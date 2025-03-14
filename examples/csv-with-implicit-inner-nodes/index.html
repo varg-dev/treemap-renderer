@@ -35,6 +35,14 @@
 </head>
 
 <body>
+    <script type="module">
+        export function updateColorScheme(schemeName) {
+            window['example'].setColorScheme(schemeName)
+        }
+        window.updateColorScheme = updateColorScheme;
+
+    </script>
+
     <pug src="treemap.pug" />
 
     <script type="module">
@@ -63,6 +71,7 @@
         document.querySelector('#commit').innerHTML = treemaprenderer.commit();
         document.querySelector('#cryear').innerHTML = new Date().getFullYear();
     </script>
+
 </body>
 
 </html>

@@ -170,4 +170,15 @@ export class ImplicitInnerNodesTreemapExample extends Example {
         (this._renderer as gloperate.Renderer).uninitialize();
     }
 
+    //TODO make scheme a type
+    setColorScheme(scheme : string): void {
+        if(this._visualization.configuration == undefined) return;
+        if (scheme == "qualitative") {
+            this._visualization.configuration.colors[3] = { identifier: 'leaf', preset: 'Pastel1', steps: 7 }
+
+        }
+        if (scheme == "sequential") {
+            this._visualization.configuration.colors[3] = { identifier: 'leaf', preset: 'Greens', steps: 7 }
+        }
+    }
 }
