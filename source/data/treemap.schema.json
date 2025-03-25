@@ -114,7 +114,8 @@
                                 },
                                 { "type": "object", "properties": {
                                         "type": { "type": "string", "enum": [ "normalize" ]},
-                                        "operation": { "type": "string", "enum": [ "zero-to-max", "min-to-max", "sign-agnostic-max" ] }
+                                        "operation": { "type": "string", "enum": [ "zero-to-max", "min-to-max", "sign-agnostic-max", "diverging" ] },
+                                        "neutralElement": {"type": "number"}
                                     },
                                     "required": [ "type", "operation" ],
                                     "additionalProperties": false

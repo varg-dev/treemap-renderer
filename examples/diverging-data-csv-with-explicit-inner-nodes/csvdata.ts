@@ -186,7 +186,8 @@ export class CSVData {
                 source: 'buffer:source-colors',
                 transformations: [
                     { type: 'fill-invalid', value: 0.0, invalidValue: -1.0 },
-                    { type: 'normalize', operation: 'zero-to-max' }
+                    //TODO: could this be a problem?
+                    { type: 'normalize', operation: 'diverging', neutralElement: 0.7 }
                 ],
             }
         ];
@@ -212,7 +213,7 @@ export class CSVData {
             { identifier: 'emphasis', colorspace: 'hex', value: '#00b0ff' },
             { identifier: 'auxiliary', colorspace: 'hex', values: ['#00aa5e', '#71237c'] },
             { identifier: 'inner', colorspace: 'hex', values: ['#e8eaee', '#eef0f4'] },
-            { identifier: 'leaf', preset: 'Oranges', steps: 7 },
+            { identifier: 'leaf', preset: 'BrBG', steps: 7 },
         ];
 
         config.layout = {

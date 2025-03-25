@@ -354,6 +354,7 @@ export namespace Configuration {
         parameter?: number;
         sourceRange?: [number, number];
         targetRange?: [number, number];
+        neutralElement?: number;
     }
 
     export interface BufferView {

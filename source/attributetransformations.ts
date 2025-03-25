@@ -279,11 +279,45 @@ export namespace AttributeTransformations {
                     factor = 1 / max;
                 }
                 break;
+            case 'diverging':
+                {
+                    const neutralElement = (transform.neutralElement === undefined ? 0.0 : transform.neutralElement);
+                    let max: number | undefined;
+                    let min: number | undefined;
+                    tree.forEachLeafNode((leaf: Node) => {
+                        const value = target[leaf.index];
+
+                        max = max === undefined ? value : Math.max(max, value);
+                        min = min === undefined ? value : Math.min(min, value);
+                    });
+
+                    assert(max !== undefined, `Valid max expected`);
+                    assert(min !== undefined, `Valid min expected`);
+
+                    if (min === undefined) {
+                        min = 0.0;
+                    }
+
+                    if (max === undefined) {
+                        max = 1.0;
+                    }
+
+                    console.log("- - -DIVERGING DEBUG - - -");
+                    const maxDelta = Math.max(Math.abs(neutralElement - min), Math.abs(max - neutralElement));
+                    console.log("min:", min, " max:", max, " maxdelta:", maxDelta, " neutral:", neutralElement);
+
+                    offset = maxDelta - neutralElement;
+                    factor = 1 / (2 * maxDelta);
+
+                }
+                break;
             default:
                 break;
         }
 
+        if(transform.operation === "diverging") console.log("mapping:");
         (target as Array<number>).forEach((element: number, index: number) => {
+            if(transform.operation === "diverging") console.log(target[index], "at index" , index, "is mapped to:", (target[index] + offset) * factor);
             target[index] = (target[index] + offset) * factor;
         });
     }
