@@ -76,9 +76,11 @@ export default defineConfig(({ mode }) => {
                     input: {
                         main: resolve(__dirname, 'index.html'),
                         explicit: resolve(__dirname, 'examples/csv-with-explicit-inner-nodes/index.html'),
+                        nominal: resolve(__dirname, 'examples/nominal-data-csv-with-explicit-inner-nodes/index.html'),
                         grouping: resolve(__dirname, 'examples/csv-with-grouping/index.html'),
                         implicit: resolve(__dirname, 'examples/csv-with-implicit-inner-nodes/index.html'),
                         direct: resolve(__dirname, 'examples/direct-config/index.html'),
+
                     },
                     output: {
                         inlineDynamicImports: false,
