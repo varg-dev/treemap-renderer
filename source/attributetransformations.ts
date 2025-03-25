@@ -302,9 +302,7 @@ export namespace AttributeTransformations {
                         max = 1.0;
                     }
 
-                    console.log("- - -DIVERGING DEBUG - - -");
                     const maxDelta = Math.max(Math.abs(neutralElement - min), Math.abs(max - neutralElement));
-                    console.log("min:", min, " max:", max, " maxdelta:", maxDelta, " neutral:", neutralElement);
 
                     offset = maxDelta - neutralElement;
                     factor = 1 / (2 * maxDelta);
@@ -315,9 +313,7 @@ export namespace AttributeTransformations {
                 break;
         }
 
-        if(transform.operation === "diverging") console.log("mapping:");
         (target as Array<number>).forEach((element: number, index: number) => {
-            if(transform.operation === "diverging") console.log(target[index], "at index" , index, "is mapped to:", (target[index] + offset) * factor);
             target[index] = (target[index] + offset) * factor;
         });
     }

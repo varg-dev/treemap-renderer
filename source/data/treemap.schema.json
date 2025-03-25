@@ -304,7 +304,8 @@
                 "leafLayer": { "type": "object", "properties": {
                         "colorMap": { "$ref": "/ColorReference", "default": "color:leaf" },
                         "height": { "$ref": "/BufferReference" },
-                        "colors": { "$ref": "/BufferReference" }
+                        "colors": { "$ref": "/BufferReference" },
+                        "colorsNormalized": { "type": "boolean", "default": false }
                     },
                     "additionalProperties": false
                 },

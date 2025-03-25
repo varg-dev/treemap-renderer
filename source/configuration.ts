@@ -438,6 +438,7 @@ export namespace Configuration {
             areaScale?: BufferIdentifier;
             height?: BufferIdentifier;
             colors?: BufferIdentifier;
+            colorsNormalized?: boolean;
         };
 
         /* @todo - should be removed soon, need more flexible visual variable mapping concept... */

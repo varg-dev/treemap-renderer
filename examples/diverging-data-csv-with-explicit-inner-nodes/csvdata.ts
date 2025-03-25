@@ -185,9 +185,7 @@ export class CSVData {
                 identifier: 'colors-normalized',
                 source: 'buffer:source-colors',
                 transformations: [
-                    { type: 'fill-invalid', value: 0.0, invalidValue: -1.0 },
-                    //TODO: could this be a problem?
-                    { type: 'normalize', operation: 'diverging', neutralElement: 0.7 }
+                    { type: 'normalize', operation: 'diverging', neutralElement: 0.5 }
                 ],
             }
         ];
@@ -239,6 +237,7 @@ export class CSVData {
                 colorMap: 'color:leaf',
                 height: 'bufferView:heights-normalized',
                 colors: 'bufferView:colors-normalized',
+                colorsNormalized: true
             },
             emphasis: { outline: new Array<number>(), highlight: new Array<number>() },
             heightScale: 0.5,
