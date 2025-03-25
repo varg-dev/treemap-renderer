@@ -1,1 +1,0 @@
-import{t as e,v as r,b as n,c as t}from"./index-Dgie0Bih.js";window.treemaprenderer=e;document.title="treemap-renderer";document.querySelector("#version").innerHTML=r();document.querySelector("#branch").innerHTML=n();document.querySelector("#commit").innerHTML=t();document.querySelector("#cryear").innerHTML=new Date().getFullYear();
