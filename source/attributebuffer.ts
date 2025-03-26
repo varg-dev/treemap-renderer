@@ -9,6 +9,7 @@ const LogLevel = auxiliaries.LogLevel;
 import { AttributeTransformations } from './attributetransformations';
 import { Configuration } from './configuration';
 import { Topology } from './topology';
+import { Node } from "./node";
 
 /* spellchecker: enable */
 
@@ -115,6 +116,25 @@ export namespace AttributeBuffer {
         return Array.prototype.reduce.apply(buffer, [(accum: [number, number], value: number) =>
             [Math.min(value, accum[0]), Math.max(value, accum[1])], [Infinity, -Infinity]]);
     }
+
+    /**
+     * Retrieve domain (2-tuple of the buffer's minimum and maximum values) of given buffer.
+     * @param buffer - Buffer to find the minimum and maximum values in.
+     * @param tree
+     */
+    export function leafRange(buffer: Configuration.AttributeBuffer, tree: Topology): [number, number] | undefined {
+        if (buffer.length === 0) {
+            return undefined;
+        }
+
+        let accum: [number, number] = [Infinity, -Infinity];
+        tree.forEachLeafNode((node : Node) => {
+            const value = buffer[node.index];
+            accum = [Math.min(value, accum[0]), Math.max(value, accum[1])];
+        });
+        return accum;
+    }
+
 
     /**
      * Create a value buffer from a named buffer configuration and an associated topology.

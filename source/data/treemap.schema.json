@@ -114,7 +114,8 @@
                                 },
                                 { "type": "object", "properties": {
                                         "type": { "type": "string", "enum": [ "normalize" ]},
-                                        "operation": { "type": "string", "enum": [ "zero-to-max", "min-to-max", "sign-agnostic-max" ] }
+                                        "operation": { "type": "string", "enum": [ "zero-to-max", "min-to-max", "sign-agnostic-max", "diverging" ] },
+                                        "neutralElement": {"type": "number"}
                                     },
                                     "required": [ "type", "operation" ],
                                     "additionalProperties": false
@@ -303,7 +304,8 @@
                 "leafLayer": { "type": "object", "properties": {
                         "colorMap": { "$ref": "/ColorReference", "default": "color:leaf" },
                         "height": { "$ref": "/BufferReference" },
-                        "colors": { "$ref": "/BufferReference" }
+                        "colors": { "$ref": "/BufferReference" },
+                        "colorsNormalized": { "type": "boolean", "default": false }
                     },
                     "additionalProperties": false
                 },
