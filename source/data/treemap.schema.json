@@ -343,7 +343,7 @@
                         "additionalProperties": { "type": "string" }
                     }
                 ] },
-                "additionallyLabelSet": { "type": "array", "items": { "type": "number", "minimum": 0 } },
+                "additionallyLabelSet": { "type": "array", "items": { "type": "number", "minimum": 0 }, "default": [] },
                 "innerNodeLayerRange": { "type": "array", "items": { "type": "number", "minimum": 0 }, "minItems": 2, "maxItems": 2, "default": [1, 2] },
                 "numTopInnerNodes": { "type": "number", "minimum": 0, "default": 0 },
                 "numTopWeightNodes": { "type": "number", "minimum": 0, "default": 0 },
