@@ -354,6 +354,7 @@ export namespace Configuration {
         parameter?: number;
         sourceRange?: [number, number];
         targetRange?: [number, number];
+        neutralElement?: number;
     }
 
     export interface BufferView {
@@ -437,6 +438,7 @@ export namespace Configuration {
             areaScale?: BufferIdentifier;
             height?: BufferIdentifier;
             colors?: BufferIdentifier;
+            colorsNormalized?: boolean;
         };
 
         /* @todo - should be removed soon, need more flexible visual variable mapping concept... */
