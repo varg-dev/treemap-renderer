@@ -75,13 +75,24 @@ export class CSVData {
         };
 
         const collect_column = (result: any, name: string) => {
+
             if (result.meta.fields.indexOf(name) < 0) {
                 const column = new Float32Array(result.data.length);
                 return column;
             }
 
+            let mappedNumber = 0;
+            const numberMap = new Map<string, number>();
+
             const column = result.data.map((row: any) => {
-                return row[name] ? row[name] : -1.0;
+                let value = row[name] ? row[name] : -1.0;
+
+                if(value != -1 && isNaN(value)) {
+                    if(!numberMap.has(value)) numberMap.set(value, mappedNumber++);
+                    value = numberMap.get(value);
+                }
+
+                return value;
             });
 
             return Float32Array.from([0].concat(column));
@@ -212,7 +223,7 @@ export class CSVData {
             { identifier: 'emphasis', colorspace: 'hex', value: '#00b0ff' },
             { identifier: 'auxiliary', colorspace: 'hex', values: ['#00aa5e', '#71237c'] },
             { identifier: 'inner', colorspace: 'hex', values: ['#e8eaee', '#eef0f4'] },
-            { identifier: 'leaf', preset: 'Set1', steps: 3 },
+            { identifier: 'leaf', preset: 'Set1', steps: 7 },
         ];
 
         config.layout = {
