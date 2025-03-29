@@ -23,7 +23,7 @@ import { Example } from '../example';
 
 // tslint:disable:max-classes-per-file
 
-export class ImplicitInnerNodesTreemapExample extends Example {
+export class ExplicitInnerNodesTreemapExample extends Example {
 
     protected obtainUrl(hash: string): string {
         return window.location.origin + window.location.pathname + "?data=" + hash;
@@ -169,4 +169,5 @@ export class ImplicitInnerNodesTreemapExample extends Example {
         this._canvas.dispose();
         (this._renderer as gloperate.Renderer).uninitialize();
     }
+
 }

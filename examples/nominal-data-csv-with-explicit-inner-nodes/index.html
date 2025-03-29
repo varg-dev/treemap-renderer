@@ -35,16 +35,15 @@
 </head>
 
 <body>
-
     <pug src="treemap.pug" />
 
     <script type="module">
-        import { ImplicitInnerNodesTreemapExample } from './treemap.ts';
+        import { ExplicitInnerNodesTreemapExample } from './treemap.ts';
 
         window.onload = function () {
 
             const canvas = document.getElementById('canvas');
-            const exampleRenderer = new ImplicitInnerNodesTreemapExample();
+            const exampleRenderer = new ExplicitInnerNodesTreemapExample();
             window['example'] = exampleRenderer;
             exampleRenderer.feature(canvas);
 
@@ -64,7 +63,6 @@
         document.querySelector('#commit').innerHTML = treemaprenderer.commit();
         document.querySelector('#cryear').innerHTML = new Date().getFullYear();
     </script>
-
 </body>
 
 </html>
