@@ -3,6 +3,7 @@ extends ../partials/template.pug
 
 include ../partials/code.pug
 
+
 block content
 
   section.container.mt-5
@@ -10,11 +11,10 @@ block content
       .col-12
         h1
           | #[span.font-weight-bold #[a(href=base+'index.html') Treemaps]]
-          | &#x2014; Implicit Inner Nodes Treemap
+          | &#x2014; Explicit Inner Nodes Treemap with Nominal Data
 
         button.pull-end.btn.btn-primary(type="button")#reload
           | Reload Page
-
 
   section.container.mt-5
     div.row
@@ -32,20 +32,23 @@ block content
 
         textarea.form-control#csv-data(rows="25")
           | # delimiter=;
-          | # paths=path
+          | # ids=id
+          | # parents=parent
           | # weights=a
           | # heights=b
-          | # colors=c
+          | # colors=c/.ts=1;.js=2;.html=3;.pug=5;.json=4;.md=6
           | # labels=name
-          | path;name;a;b;c
-          | a/e;e;0.125;0.1;0.0
-          | a/f;f;0.25;0.1;0.1
-          | b/g;g;0.125;0.3;0.1
-          | b/h;h;0.125;0.2;0.6
-          | c/i;i;0.5;0.1;0.7
-          | c/j;j;0.125;0.1;1.0
-          | d/k;k;0.5;0.1;0.0
-          | d/l;l;0.5;0.2;0.0
+          | id;parent;name;a;b;c
+          | 1;0;a
+          | 2;0;b
+          | 3;0;c
+          | 4;0;d
+          | 5;1;.ts;0.125;0.1;.ts
+          | 6;1;.js;0.25;0.1;.js
+          | 7;2;.html;0.125;0.3;.html
+          | 8;2;.pug;0.125;0.2;.pug
+          | 9;3;.json;0.5;0.1;.json
+          | 10;4;.md;0.5;0.1;.md
 
   section.container.mt-5
     div.row
