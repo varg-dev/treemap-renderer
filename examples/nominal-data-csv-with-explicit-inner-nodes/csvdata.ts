@@ -20,6 +20,7 @@ export class CSVHeader {
     public weight_column: string;
     public height_column: string;
     public color_column: string;
+    public color_parameters : Map<string, number | undefined> | undefined;
     public label_column: string;
 }
 
@@ -37,8 +38,8 @@ export class CSVData {
     protected static parseHeader(lines: Array<string>, header: CSVHeader): void {
         while (lines.length >= 1 && lines[0].startsWith('#')) {
             const line = lines.shift()!.substring(1).trim();
-
-            const [key, value] = line.split('=').map((s: string) => s.trim());
+            const [keyAndValue, parameters] = line.split('/');
+            const [key, value] = keyAndValue.split('=').map((s: string) => s.trim());
 
             if (key == 'delimiter') {
                 header.csv_delimiter = value || ';';
@@ -52,6 +53,9 @@ export class CSVData {
                 header.height_column = value || '';
             } else if (key == 'colors') {
                 header.color_column = value || '';
+                //TODO undefined abfangen, wenn nur manche parameter initialisiert sind
+                if(parameters) header.color_parameters = new Map<string, number>(
+                        parameters.split(';').map(parameterPair=> parameterPair.split('=') as [string, number]));
             } else if (key == 'labels') {
                 header.label_column = value || '';
             } else {
@@ -75,23 +79,33 @@ export class CSVData {
         };
 
         const collect_column = (result: any, name: string) => {
-
             if (result.meta.fields.indexOf(name) < 0) {
                 const column = new Float32Array(result.data.length);
                 return column;
             }
 
-            let mappedNumber = 0;
-            const numberMap = new Map<string, number>();
+            let colorMappingIndex = 1;
+            const colorMap = new Map<string, number>();
+            const parameterValuesSet = () => {
+                let valuesSet = false;
+                header.color_parameters?.forEach((value: number | undefined, key: string, map) => {
+                    if(value) valuesSet = true;
+                });
+                return valuesSet;
+            }
 
             const column = result.data.map((row: any) => {
                 let value = row[name] ? row[name] : -1.0;
 
-                if(value != -1 && isNaN(value)) {
-                    if(!numberMap.has(value)) numberMap.set(value, mappedNumber++);
-                    value = numberMap.get(value);
+                if(isNaN(value)) {
+                    if(header.color_parameters === undefined) {
+                        if (!colorMap.has(value)) colorMap.set(value, colorMappingIndex++);
+                        return colorMap.get(value);
+                    }
+                    if(parameterValuesSet()) {
+                        return (header.color_parameters!.get(value) ? header.color_parameters!.get(value) : 0);
+                    }
                 }
-
                 return value;
             });
 
@@ -223,7 +237,7 @@ export class CSVData {
             { identifier: 'emphasis', colorspace: 'hex', value: '#00b0ff' },
             { identifier: 'auxiliary', colorspace: 'hex', values: ['#00aa5e', '#71237c'] },
             { identifier: 'inner', colorspace: 'hex', values: ['#e8eaee', '#eef0f4'] },
-            { identifier: 'leaf', preset: 'Set1', steps: 7 },
+            { identifier: 'leaf', preset: 'Set1', steps: 6 },
         ];
 
         config.layout = {

@@ -127,7 +127,6 @@ export class ExplicitInnerNodesTreemapExample extends Example {
 
             dataElement.oninput = (event) => {
                 const testdata = dataElement.value;
-
                 CSVData.loadAsync(testdata)
                     .then((config: Configuration) => {
                         loadConfig(config);
