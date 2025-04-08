@@ -4,7 +4,6 @@
 import { auxiliaries, tuples } from 'webgl-operate';
 
 import {
-    Camera,
     ChangeLookup,
     Context,
     Framebuffer,
@@ -12,6 +11,8 @@ import {
     Program,
     Shader,
 } from 'webgl-operate';
+
+import { AbstractCamera } from './abstractcamera';
 
 import { PointGeometry } from './pointgeometry';
 
@@ -42,7 +43,7 @@ export class PointRenderPass extends Initializable {
     protected _target: Framebuffer;
 
     /** @see {@link camera} */
-    protected _camera: Camera;
+    protected _camera: AbstractCamera;
 
     /** @see {@link ndcOffset} */
     protected _ndcOffset: tuples.GLfloat2;
@@ -215,7 +216,7 @@ export class PointRenderPass extends Initializable {
     /**
      * Sets the camera, from where the view projection matrix will be retrieved.
      */
-    set camera(camera: Camera) {
+    set camera(camera: AbstractCamera) {
         this.assertInitialized();
         if (this._camera === camera) {
             return;

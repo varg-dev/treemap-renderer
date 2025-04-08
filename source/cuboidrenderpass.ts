@@ -3,7 +3,6 @@
 
 import { auxiliaries, gl_matrix_extensions, tuples, vec3 } from 'webgl-operate';
 import {
-    Camera,
     ChangeLookup,
     Context,
     Framebuffer,
@@ -11,6 +10,8 @@ import {
     Program,
     Shader,
 } from 'webgl-operate';
+
+import { AbstractCamera } from './abstractcamera';
 
 const log = auxiliaries.log;
 const LogLevel = auxiliaries.LogLevel;
@@ -82,7 +83,7 @@ export class CuboidRenderPass extends Initializable {
     protected _target: Framebuffer;
 
     /** @see {@link camera} */
-    protected _camera: Camera;
+    protected _camera: AbstractCamera;
 
     /** @see {@link ndcOffset} */
     protected _ndcOffset: tuples.GLfloat2;
@@ -491,7 +492,7 @@ export class CuboidRenderPass extends Initializable {
      * rendered at all, and (2) prioritize the faces in an attempt to reduce the fill-rate/fragment
      * operations by favoring faces-orientation with respect to the camera.
      */
-    set camera(camera: Camera) {
+    set camera(camera: AbstractCamera) {
         this.assertInitialized();
         if (this._camera === camera) {
             return;

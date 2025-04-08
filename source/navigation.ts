@@ -3,18 +3,19 @@
 
 import { Observable, ReplaySubject } from 'rxjs';
 
-import { auxiliaries, gl_matrix_extensions, mat4, vec2, vec3 } from 'webgl-operate';
+import {auxiliaries, Camera, gl_matrix_extensions, mat4, vec2, vec3} from 'webgl-operate';
 const assert = auxiliaries.assert;
 const v2 = gl_matrix_extensions.v2;
 
 import {
-    Camera,
     EventHandler,
     EventProvider,
     Invalidate,
     MouseEventProvider,
     PointerEventProvider
 } from 'webgl-operate';
+
+import { AbstractCamera } from './abstractcamera';
 
 import { NavigationModifier } from './navigationmodifier';
 
@@ -34,7 +35,7 @@ export class Navigation {
     protected _invalidate: Invalidate;
 
     /** @see {@link camera} */
-    protected _camera: Camera;
+    protected _camera: AbstractCamera;
 
     /**
      * Identifies the active camera modifier.
@@ -383,9 +384,10 @@ export class Navigation {
     /**
      * The camera that is to be modified in response to various events.
      */
-    set camera(camera: Camera) {
+    set camera(camera: AbstractCamera) {
         this._camera = camera;
-        this._cameraModifier.camera = camera;
+        //TODO this is highly illegal
+        this._cameraModifier.camera = camera as any as Camera;
     }
 
 
