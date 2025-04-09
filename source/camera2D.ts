@@ -1,10 +1,6 @@
 
 /* spellchecker: disable */
-
-import { mat4, vec3 } from 'webgl-operate';
-import { m4 } from 'webgl-operate/lib/gl-matrix-extensions';
-
-import { DEG2RAD, RAD2DEG} from 'webgl-operate/lib/auxiliaries';
+import { auxiliaries, gl_matrix_extensions, mat4, vec3 } from 'webgl-operate';
 
 import { AbstractCamera } from './abstractcamera';
 
@@ -51,10 +47,10 @@ export class Camera2D extends AbstractCamera {
      * Note that internally, this will be translated to the corresponding the vertical field.
      */
     set fovx(fovx: GLfloat) {
-        const horizontalAngle = fovx * DEG2RAD;
+        const horizontalAngle = fovx * auxiliaries.DEG2RAD;
         const verticalAngle = 2.0 * Math.atan(Math.tan(horizontalAngle / 2.0) * (1.0 / this.aspect));
 
-        const fovy = verticalAngle * RAD2DEG;
+        const fovy = verticalAngle * auxiliaries.RAD2DEG;
         if (this._fovy === fovy) {
             return;
         }
@@ -73,7 +69,7 @@ export class Camera2D extends AbstractCamera {
      */
     fovFromLens(sensorWidth: number, focalLength: number): void {
         const horizontalAngle = 2.0 * Math.atan(sensorWidth / (2.0 * focalLength));
-        this.fovx = horizontalAngle * RAD2DEG;
+        this.fovx = horizontalAngle * auxiliaries.RAD2DEG;
     }
 
     /**
@@ -83,7 +79,7 @@ export class Camera2D extends AbstractCamera {
         if (this._view) { // return cached value
             return this._view;
         }
-        this._view = mat4.lookAt(m4(), this._eye, this._center, this._up);
+        this._view = mat4.lookAt(gl_matrix_extensions.m4(), this._eye, this._center, this._up);
         return this._view;
     }
 
@@ -94,7 +90,7 @@ export class Camera2D extends AbstractCamera {
         if (this._viewInverse !== undefined) { // return cached value
             return this._viewInverse;
         }
-        this._viewInverse = mat4.invert(m4(), this.view);
+        this._viewInverse = mat4.invert(gl_matrix_extensions.m4(), this.view);
         return this._viewInverse;
     }
 
@@ -105,7 +101,8 @@ export class Camera2D extends AbstractCamera {
         if (this._projection) { // return cached value
             return this._projection;
         }
-        this._projection = mat4.perspective();
+        console.log(this.width, this.height, this._aspect);
+        this._projection = mat4.ortho(gl_matrix_extensions.m4(), -this._aspect, this._aspect, -1.0, 1.0, this.near, this.far)
         return this._projection;
     }
 
@@ -116,7 +113,7 @@ export class Camera2D extends AbstractCamera {
         if (this._projectionInverse !== undefined) { // return cached value
             return this._projectionInverse;
         }
-        this._projectionInverse = mat4.invert(m4(), this.projection);
+        this._projectionInverse = mat4.invert(gl_matrix_extensions.m4(), this.projection);
         return this._projectionInverse;
     }
 
@@ -128,8 +125,8 @@ export class Camera2D extends AbstractCamera {
         if (this._viewProjection) { // return cached value
             return this._viewProjection;
         }
-        this._viewProjection = mat4.multiply(m4(), this.projection, this.view);
-        this._viewProjection = mat4.multiply(m4(), this.postViewProjection, this._viewProjection);
+        this._viewProjection = mat4.multiply(gl_matrix_extensions.m4(), this.projection, this.view);
+        this._viewProjection = mat4.multiply(gl_matrix_extensions.m4(), this.postViewProjection, this._viewProjection);
         return this._viewProjection;
     }
 
@@ -141,7 +138,7 @@ export class Camera2D extends AbstractCamera {
         if (this._viewProjectionInverse !== undefined) { // return cached value
             return this._viewProjectionInverse;
         }
-        this._viewProjectionInverse = mat4.invert(m4(), this.viewProjection);
+        this._viewProjectionInverse = mat4.invert(gl_matrix_extensions.m4(), this.viewProjection);
         return this._viewProjectionInverse;
     }
 
@@ -153,7 +150,7 @@ export class Camera2D extends AbstractCamera {
         if (this._postViewProjection) {
             return this._postViewProjection;
         } else {
-            return mat4.identity(m4());
+            return mat4.identity(gl_matrix_extensions.m4());
         }
     }
 

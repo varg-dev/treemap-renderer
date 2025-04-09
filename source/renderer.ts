@@ -40,6 +40,7 @@ import { Visualization } from './visualization';
 import ROBOTO_FONT from './assets/roboto.fnt';
 import ROBOTO_DT from './assets/roboto.png';
 import {Camera3D} from "./camera3D";
+import {Camera2D} from "./camera2D";
 
 const assert = auxiliaries.assert;
 
@@ -550,15 +551,15 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
     protected initializeCamera(): void {
         this.assertUninitialized();
 
-        this._camera = new Camera3D();
+        this._camera = new Camera2D();
 
         this._camera.near = Renderer.CAMERA_NEAR_DEFAULT;
         this._camera.far = Renderer.CAMERA_FAR_DEFAULT;
 
         /** @todo: take eye, center, and up from configuration */
-        this._camera.eye = vec3.fromValues(0, 3.0, 0.2001);
+        this._camera.eye = vec3.fromValues(0, 5.0, 0.2);
         this._camera.center = vec3.fromValues(0.0, 0.0, 0.2);
-        this._camera.up = vec3.fromValues(0.0, 1.0, 0.0);
+        this._camera.up = vec3.fromValues(0.0, 0.0, -1.0);
         this._camera.fovy = 2.0 * AbstractCamera.calculateFovY(20.0, 60.0) * auxiliaries.RAD2DEG;
     }
 

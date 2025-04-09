@@ -1,6 +1,4 @@
-import { mat4, vec3 } from 'webgl-operate';
-import { duplicate2, GLsizei2 } from 'webgl-operate/lib/tuples';
-import { log, LogLevel } from 'webgl-operate/lib/auxiliaries';
+import { mat4, vec3, tuples, auxiliaries } from 'webgl-operate';
 
 export abstract class AbstractCamera {
     private static readonly DEFAULT_EYE: vec3 = vec3.fromValues(0.0, 0.0, 1.0);
@@ -32,7 +30,7 @@ export abstract class AbstractCamera {
     protected _far = AbstractCamera.DEFAULT_FAR;
 
     /** @see {@link viewport} */
-    protected _viewport: GLsizei2 = [1, 1];
+    protected _viewport: tuples.GLsizei2 = [1, 1];
 
     /** @see {@link aspect} */
     protected _aspect: GLfloat = 1.0;
@@ -182,7 +180,7 @@ export abstract class AbstractCamera {
             return;
         }
         if (near >= this._far) {
-            log(LogLevel.Warning, `near expected to be smaller than far (${this._far}), given ${near}`);
+            auxiliaries.log(auxiliaries.LogLevel.Warning, `near expected to be smaller than far (${this._far}), given ${near}`);
         }
         this._near = near;
         this.invalidate(false, true);
@@ -203,7 +201,7 @@ export abstract class AbstractCamera {
             return;
         }
         if (this._near >= far) {
-            log(LogLevel.Warning, `far expected to be greater than near (${this._near}), given ${far}`);
+            auxiliaries.log(auxiliaries.LogLevel.Warning, `far expected to be greater than near (${this._near}), given ${far}`);
         }
         this._far = far;
         this.invalidate(false, true);
@@ -212,11 +210,11 @@ export abstract class AbstractCamera {
     /**
      * Sets the viewport size. Invalidates the projection.
      */
-    set viewport(size: GLsizei2) {
+    set viewport(size: tuples.GLsizei2) {
         if (this._viewport[0] === size[0] && this._viewport[1] === size[1]) {
             return;
         }
-        this._viewport = duplicate2<GLsizei>(size);
+        this._viewport = tuples.duplicate2<GLsizei>(size);
         this.invalidate(false, true);
     }
 
@@ -224,7 +222,7 @@ export abstract class AbstractCamera {
      * The size of the target viewport used to determine the aspect ratio for subsequent perspective matrix projection
      * computation.
      */
-    get viewport(): GLsizei2 {
+    get viewport(): tuples.GLsizei2 {
         return this._viewport;
     }
 
