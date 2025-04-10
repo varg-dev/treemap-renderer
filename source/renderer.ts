@@ -1,17 +1,13 @@
-
 /* spellchecker: disable */
 
 // import { throws } from 'assert';
-import {auxiliaries, Camera, mat4, vec3} from 'webgl-operate';
-
-import log = auxiliaries.log;
-import LogLevel = auxiliaries.LogLevel;
-
 import {
     AbstractKernel,
     AccumulatePass,
     AntiAliasingKernel,
+    auxiliaries,
     BlitPass,
+    Camera,
     Context,
     EventProvider,
     FontFace,
@@ -19,28 +15,32 @@ import {
     Invalidate,
     Label,
     LabelRenderPass,
+    mat4,
     NdcFillingTriangle,
     Position3DLabel,
     Projected3DLabel,
     ReadbackPass,
-    Renderer as AbstractRenderer
+    Renderer as AbstractRenderer,
+    vec3
 } from 'webgl-operate';
 
-import { AbstractCamera } from './abstractcamera';
+import {AbstractCamera} from './abstractcamera';
 
-import { CuboidRenderPass } from './cuboidrenderpass';
-import { Geometry } from './geometry';
-import { MultiRenderTarget } from './multirendertarget';
-import { CoordsAccess, IdAccess, Navigation } from './navigation';
-import { PointRenderPass } from './pointrenderpass';
-import { QuadRenderPass } from './quadrenderpass';
-import { ScreenAlignedQuadRenderPass } from './screenalignedquadrenderpass';
-import { Visualization } from './visualization';
+import {CuboidRenderPass} from './cuboidrenderpass';
+import {Geometry} from './geometry';
+import {MultiRenderTarget} from './multirendertarget';
+import {CoordsAccess, IdAccess, Navigation} from './navigation';
+import {PointRenderPass} from './pointrenderpass';
+import {QuadRenderPass} from './quadrenderpass';
+import {ScreenAlignedQuadRenderPass} from './screenalignedquadrenderpass';
+import {Visualization, VisualizationType} from './visualization';
 
 import ROBOTO_FONT from './assets/roboto.fnt';
 import ROBOTO_DT from './assets/roboto.png';
-import {Camera3D} from "./camera3D";
 import {Camera2D} from "./camera2D";
+import log = auxiliaries.log;
+import LogLevel = auxiliaries.LogLevel;
+import {Camera3D} from "./camera3D";
 
 const assert = auxiliaries.assert;
 
@@ -551,15 +551,24 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
     protected initializeCamera(): void {
         this.assertUninitialized();
 
-        this._camera = new Camera2D();
+        /** @todo: take eye, center, and up from configuration */
+
+        console.log(this._visualization);
+        if (this._visualization.visualizationType == VisualizationType.VISUALIZATION_2D) {
+            this._camera = new Camera2D();
+            this._camera.eye = vec3.fromValues(0, 5.0, 0.2);
+            this._camera.center = vec3.fromValues(0.0, 0.0, 0.2);
+            this._camera.up = vec3.fromValues(0.0, 0.0, -1.0);
+        } else {
+            this._camera = new Camera3D();
+            this._camera.eye = vec3.fromValues(0, 1.5, 2.2);
+            this._camera.center = vec3.fromValues(0.0, 0.0, 0.2);
+            this._camera.up = vec3.fromValues(0.0, 1.0, 0.0);
+        }
 
         this._camera.near = Renderer.CAMERA_NEAR_DEFAULT;
         this._camera.far = Renderer.CAMERA_FAR_DEFAULT;
 
-        /** @todo: take eye, center, and up from configuration */
-        this._camera.eye = vec3.fromValues(0, 5.0, 0.2);
-        this._camera.center = vec3.fromValues(0.0, 0.0, 0.2);
-        this._camera.up = vec3.fromValues(0.0, 0.0, -1.0);
         this._camera.fovy = 2.0 * AbstractCamera.calculateFovY(20.0, 60.0) * auxiliaries.RAD2DEG;
     }
 
@@ -572,7 +581,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
     protected initializeNavigation(callback: Invalidate, eventProvider: EventProvider): void {
         this.assertUninitialized();
 
-        this._navigation = new Navigation(callback, eventProvider);
+        this._navigation = new Navigation(callback, eventProvider, this._visualization.visualizationType);
         this._navigation.camera = this._camera;
 
         this._navigation.idAccess = this;

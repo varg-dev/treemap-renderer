@@ -6,11 +6,10 @@ import { CameraModifier } from 'webgl-operate';
 
 /* spellchecker: enable */
 
-
+//TODO apply this to the camera classes
 const v2 = gl_matrix_extensions.v2;
 const v3 = gl_matrix_extensions.v3;
 const sign = gl_matrix_extensions.sign;
-const clamp = gl_matrix_extensions.clamp;
 const clamp3 = gl_matrix_extensions.clamp3;
 
 const DEG2RAD = auxiliaries.DEG2RAD;
@@ -31,8 +30,9 @@ class Vertex {
     world: vec3 | undefined = vec3.create();
 }
 
+//TODO think about what to make abstract, what to make common
 
-export class NavigationModifier extends CameraModifier {
+export abstract class AbstractNavigationModifier extends CameraModifier {
 
     protected static readonly HALF_SQUARE_LENGTH = 2.0;
     protected static readonly SCALE_FACTOR = 0.004;
@@ -103,7 +103,7 @@ export class NavigationModifier extends CameraModifier {
         }
 
         const i2 = vec2.fromValues(intersection[0], intersection[2]);
-        const withinSquare = ray_math.isPointWithinSquare(i2, NavigationModifier.HALF_SQUARE_LENGTH);
+        const withinSquare = ray_math.isPointWithinSquare(i2, AbstractNavigationModifier.HALF_SQUARE_LENGTH);
 
         return withinSquare ? intersection : undefined;
     }
@@ -170,14 +170,14 @@ export class NavigationModifier extends CameraModifier {
             return;
         }
 
-        this._minScale = this._camera.near * NavigationModifier.MIN_NEAR_PLANE_FACTOR * lInverse - 1.0;
+        this._minScale = this._camera.near * AbstractNavigationModifier.MIN_NEAR_PLANE_FACTOR * lInverse - 1.0;
 
         /**
          * Compute the maximal allowed scale (for the distance from camera eye to initial point 0) for
          * enforcement of scale constraints: the camera's eye must be a certain distance away from the
          * camera's center.
          */
-        this._maxScale = NavigationModifier.MAX_DISTANCE_TO_SQUARE * lInverse - 1.0;
+        this._maxScale = AbstractNavigationModifier.MAX_DISTANCE_TO_SQUARE * lInverse - 1.0;
     }
 
     /**
@@ -344,95 +344,19 @@ export class NavigationModifier extends CameraModifier {
     }
 
     /**
+     * TODO über comments bei abstracten Klassen nachdenken
      * Scales the distance between the y = 0 constrained camera center and the camera's eye.
      * @param step - If undefined, the distance of initial and current position is used, else the step
      * value's sign is used for zoom direction (-1 for increase, +1 for decrease in distance).
      */
-    scale(step?: number): void {
-        this.assert_valid();
-        assert(this._minScale !== undefined && this._maxScale !== undefined,
-            `valid scale constraints expected`);
-
-        let scale: number;
-        if (undefined === step) {
-            const currentScreenPos = this.currentPoints[0].screen;
-            const initialScreenPos = this.initialPoints[0].screen;
-            if (!initialScreenPos || !currentScreenPos) {
-                return;
-            }
-            const magnitude = vec2.subtract(v2(), initialScreenPos, currentScreenPos);
-            scale = magnitude[1] / window.devicePixelRatio;
-        } else {
-            scale = -sign(step) * NavigationModifier.SCALE_STEP_FACTOR;
-        }
-        scale = clamp(scale * NavigationModifier.SCALE_FACTOR, this._minScale!, this._maxScale!);
-
-        const initialWorldPos = this.initialPoints[0].world;
-        if (!initialWorldPos) {
-            return;
-        }
-        const pointToEye = vec3.sub(v3(), this.initialEye, initialWorldPos);
-        const pointToCenter = vec3.sub(v3(), this.initialCenter, initialWorldPos);
-
-        /* Apply scale to the point to camera's center and eye respectively. */
-        const eye = vec3.add(v3(), this.initialEye, vec3.scale(v3(), pointToEye, scale));
-        const direction = vec3.add(v3(), this.initialCenter, vec3.scale(v3(), pointToCenter, scale));
-        /* Enforce camera y = 0 by computing eye-center ray intersection with ground plane (y = 0). */
-        const center = ray_math.rayPlaneIntersection(this._camera.eye, direction);
-
-        if (!center) {
-            return;
-        }
-
-        /**
-         * Enforce scale constraint (3). Since this is metaphor implements a scale to point technique,
-         * scaling implicitly translates the camera's center. The center, again, is restricted to be
-         * within the square. For it an additional set of minimum and minimum allowed scale is
-         * pre-computed. All three constraints result in a lower and upper scale bound.
-         */
-        this._camera.center = this._override ?
-            center : clamp3(v3(), center, [-1.0, 0.0, -1.0], [+1.0, 0.0, +1.0]);
-        this._camera.eye = vec3.add(v3(), eye, vec3.sub(v3(), this._camera.center, center));
-    }
+    abstract scale(step?: number): void;
 
     /**
      * Rotate the camera at the center. The horizontal delta of the initial and current screen position
      * is used for rotation around the y-axis. The vertical delta is used for rotation around the x-Axis
      * (oriented towards the screen/camera).
      */
-    rotate(): void {
-        this.assert_valid();
-
-        const currentScreenPos = this.currentPoints[0].screen;
-        const initialScreenPos = this.initialPoints[0].screen;
-        if (!initialScreenPos || !currentScreenPos) {
-            return;
-        }
-
-        const magnitudes = vec2.subtract(v2(), initialScreenPos, currentScreenPos);
-        vec2.scale(magnitudes, magnitudes, window.devicePixelRatio * NavigationModifier.ROTATE_FACTOR);
-
-        if (this._minAngles[1] && this._maxAngles[1]) {
-            magnitudes[1] = clamp(magnitudes[1], this._minAngles[1], this._maxAngles[1]);
-        }
-
-        const center = this._override ? this.initialCenter : clamp3(v3(), this.initialCenter
-            , [-1.0, 0.0, -1.0], [+1.0, 0.0, +1.0]);
-
-        const T = mat4.translate(mat4.create(), mat4.create(), center);
-        mat4.rotateY(T, T, magnitudes[0]);
-        mat4.rotate(T, T, magnitudes[1], this._xAxisScreenSpace);
-        mat4.translate(T, T, vec3.negate(v3(), center));
-
-        this._camera.center = center;
-        const eye: vec3 | undefined = vec3.transformMat4(v3(), this.initialEye, T);
-
-        if (!eye) {
-            return;
-        }
-
-        this._camera.eye = eye;
-    }
+    abstract rotate(): void;
 
     /**
      * Computes a world space position based on view space position. Note that if no geometry is hit,
@@ -471,7 +395,7 @@ export class NavigationModifier extends CameraModifier {
         const ln = this._coordsAccess(pos[0], pos[1], 0.0, viewProjectionInverse!);
         const lf = this._coordsAccess(pos[0], pos[1], 1.0, viewProjectionInverse!);
 
-        return NavigationModifier.rayY0SquareIntersection(ln!, lf!);
+        return AbstractNavigationModifier.rayY0SquareIntersection(ln!, lf!);
     }
 
     update(): void { }

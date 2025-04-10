@@ -1,23 +1,29 @@
-
 /* spellchecker: disable */
 
-import { Observable, ReplaySubject } from 'rxjs';
-
-import {auxiliaries, Camera, gl_matrix_extensions, mat4, vec2, vec3} from 'webgl-operate';
-const assert = auxiliaries.assert;
-const v2 = gl_matrix_extensions.v2;
+import {Observable, ReplaySubject} from 'rxjs';
 
 import {
+    auxiliaries,
+    Camera,
     EventHandler,
     EventProvider,
+    gl_matrix_extensions,
     Invalidate,
+    mat4,
     MouseEventProvider,
-    PointerEventProvider
+    PointerEventProvider,
+    vec2,
+    vec3
 } from 'webgl-operate';
 
-import { AbstractCamera } from './abstractcamera';
+import {AbstractCamera} from './abstractcamera';
+import {VisualizationType} from "./visualization";
+import {AbstractNavigationModifier} from "./abstractnavigationmodifier";
+import {Navigationmodifier2D} from "./navigationmodifier2D";
+import {Navigationmodifier3D} from "./navigationmodifier3D";
 
-import { NavigationModifier } from './navigationmodifier';
+const assert = auxiliaries.assert;
+const v2 = gl_matrix_extensions.v2;
 
 /* spellchecker: enable */
 
@@ -51,13 +57,17 @@ export class Navigation {
 
     /**
      * @todo - Deprecated modifier is used for now.
+     * TODO: What do you mean, deprecated?
      */
-    protected _cameraModifier = new NavigationModifier();
+
+    protected _cameraModifier : AbstractNavigationModifier;
 
     /**
      * Even handler used to forward/map events to specific camera modifiers.
      */
     protected _eventHandler: EventHandler;
+
+    protected _visualizationType: VisualizationType;
 
     protected _touchSupported: boolean;
 
@@ -73,8 +83,19 @@ export class Navigation {
     protected _navigationStartSubject = new ReplaySubject<void>(1);
 
 
-    constructor(invalidate: Invalidate, eventProvider: EventProvider) {
+    constructor(invalidate: Invalidate, eventProvider: EventProvider, visualizationType: VisualizationType) {
         this._invalidate = invalidate;
+
+        this._visualizationType = visualizationType;
+        switch (this._visualizationType) {
+            case VisualizationType.VISUALIZATION_2D:
+                this._cameraModifier = new Navigationmodifier2D();
+                break;
+            case VisualizationType.VISUALIZATION_3D:
+            default:
+                this._cameraModifier = new Navigationmodifier3D();
+                break;
+        }
 
         const event = 'ontouchstart';
         this._touchSupported = (document.documentElement && event in document.documentElement)
