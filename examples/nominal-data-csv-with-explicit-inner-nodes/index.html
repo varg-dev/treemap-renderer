@@ -32,7 +32,7 @@
             font-family: "Roboto Mono" !important;
         }
     </style>
-  <script type="module" crossorigin src="/treemap-renderer/assets/diverging-BhPBokg_.js"></script>
+  <script type="module" crossorigin src="/treemap-renderer/assets/nominal-UY0aIizs.js"></script>
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/index-Bx_F_XeT.js">
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/example-BGfpFHRI.js">
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/papaparse.min-B77FzdJ_.js">
@@ -43,27 +43,24 @@
 branch <code id="branch">branch</code>,
 commit <code id="commit">commit</code>.</p><p class="mt-4">WebGL <span class="font-weight-bold">About Page</span>: <a href="https://webgl-operate.org/about.html">webgl-operate.org/about.html</a>
 &emsp;|&emsp;WebGL <span class="font-weight-bold">Operate</span>: <a href="https://webgl-operate.org">webgl-operate.org</a></p></div></div></section><section class="container mt-5"><div class="row"><div class="col-12"><h1><span class="font-weight-bold"><a href="/treemap-renderer/index.html">Treemaps</a></span>
-&#x2014; Explicit Inner Nodes Treemap (Diverging Data)</h1><button class="pull-end btn btn-primary" type="button" id="reload">Reload Page</button></div></div></section><section class="container mt-5"><div class="row"><div class="col"><canvas class="embed-responsive-item w-100" id="canvas"></canvas></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">CSV Content:</p><textarea class="form-control" id="csv-data" rows="25"># delimiter=;
+&#x2014; Explicit Inner Nodes Treemap with Nominal Data</h1><button class="pull-end btn btn-primary" type="button" id="reload">Reload Page</button></div></div></section><section class="container mt-5"><div class="row"><div class="col"><canvas class="embed-responsive-item w-100" id="canvas"></canvas></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">CSV Content:</p><textarea class="form-control" id="csv-data" rows="25"># delimiter=;
 # ids=id
 # parents=parent
 # weights=a
 # heights=b
-# colors=c
+# colors=c/.ts=1;.js=2;.html=3;.pug=5;.json=4;.md=6
 # labels=name
-# neutralElement=0.5
 id;parent;name;a;b;c
 1;0;a
 2;0;b
 3;0;c
 4;0;d
-5;1;e;0.125;0.1;0.0
-6;1;f;0.25;0.1;0.4
-7;2;g;0.125;0.1;0.4
-8;2;h;0.125;0.2;0.5
-9;3;i;0.5;0.1;0.8
-10;3;j;0.125;0.1;1.0
-11;4;k;0.5;0.1;0.0
-12;4;l;0.5;0.2;0.6</textarea></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Prepared Config:</p><pre class="alert alert-secondary"><code id="config-display" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Direct Link:</p><pre class="alert alert-secondary"><code id="data-hash" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">WebGL/webgl-operate Information:<pre class="alert alert-secondary"><code id="context-about"> </code></pre></p></div></div></section><footer><div class="row text-center"><div class="col-12"><p class="mt-5 mb-4">&copy; 2022&thinsp;&ndash;&thinsp;<span id="cryear"></span></p></div></div></footer>
+5;1;.ts;0.125;0.1;.ts
+6;1;.js;0.25;0.1;.js
+7;2;.html;0.125;0.3;.html
+8;2;.pug;0.125;0.2;.pug
+9;3;.json;0.5;0.1;.json
+10;4;.md;0.5;0.1;.md</textarea></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Prepared Config:</p><pre class="alert alert-secondary"><code id="config-display" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Direct Link:</p><pre class="alert alert-secondary"><code id="data-hash" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">WebGL/webgl-operate Information:<pre class="alert alert-secondary"><code id="context-about"> </code></pre></p></div></div></section><footer><div class="row text-center"><div class="col-12"><p class="mt-5 mb-4">&copy; 2022&thinsp;&ndash;&thinsp;<span id="cryear"></span></p></div></div></footer>
 
 
 </body>
