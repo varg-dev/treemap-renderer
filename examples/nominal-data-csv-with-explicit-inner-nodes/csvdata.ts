@@ -14,14 +14,14 @@ import { Configuration, Topology, NodeSort } from '../../source/treemap-renderer
 
 
 export class CSVHeader {
-    public csv_delimiter: string = ';';
-    public id_column: string = '';
-    public parent_column: string = '';
-    public weight_column: string = '';
-    public height_column: string = '';
-    public color_column: string = '';
-    public neutral_element: number = 0.5;
-    public label_column: string = '';
+    public csv_delimiter: string;
+    public id_column: string;
+    public parent_column: string;
+    public weight_column: string;
+    public height_column: string;
+    public color_column: string;
+    public color_parameters : Map<string, number | undefined> | undefined;
+    public label_column: string;
 }
 
 
@@ -38,8 +38,8 @@ export class CSVData {
     protected static parseHeader(lines: Array<string>, header: CSVHeader): void {
         while (lines.length >= 1 && lines[0].startsWith('#')) {
             const line = lines.shift()!.substring(1).trim();
-
-            const [key, value] = line.split('=').map((s: string) => s.trim());
+            const [keyAndValue, parameters] = line.split('/');
+            const [key, value] = keyAndValue.split('=').map((s: string) => s.trim());
 
             if (key == 'delimiter') {
                 header.csv_delimiter = value || ';';
@@ -53,8 +53,9 @@ export class CSVData {
                 header.height_column = value || '';
             } else if (key == 'colors') {
                 header.color_column = value || '';
-            } else if (key == 'neutralElement') {
-                header.neutral_element = parseFloat(value) || header.neutral_element;
+                //TODO undefined abfangen, wenn nur manche parameter initialisiert sind
+                if(parameters) header.color_parameters = new Map<string, number>(
+                        parameters.split(';').map(parameterPair=> parameterPair.split('=') as [string, number]));
             } else if (key == 'labels') {
                 header.label_column = value || '';
             } else {
@@ -83,8 +84,29 @@ export class CSVData {
                 return column;
             }
 
+            let colorMappingIndex = 1;
+            const colorMap = new Map<string, number>();
+            const parameterValuesSet = () => {
+                let valuesSet = false;
+                header.color_parameters?.forEach((value: number | undefined, key: string, map) => {
+                    if(value) valuesSet = true;
+                });
+                return valuesSet;
+            }
+
             const column = result.data.map((row: any) => {
-                return row[name] ? row[name] : -1.0;
+                let value = row[name] ? row[name] : -1.0;
+
+                if(isNaN(value)) {
+                    if(header.color_parameters === undefined) {
+                        if (!colorMap.has(value)) colorMap.set(value, colorMappingIndex++);
+                        return colorMap.get(value);
+                    }
+                    if(parameterValuesSet()) {
+                        return (header.color_parameters!.get(value) ? header.color_parameters!.get(value) : 0);
+                    }
+                }
+                return value;
             });
 
             return Float32Array.from([0].concat(column));
@@ -188,7 +210,8 @@ export class CSVData {
                 identifier: 'colors-normalized',
                 source: 'buffer:source-colors',
                 transformations: [
-                    { type: 'normalize', operation: 'diverging', neutralElement: header.neutral_element }
+                    { type: 'fill-invalid', value: 0.0, invalidValue: -1.0 },
+                    { type: 'normalize', operation: 'zero-to-max' }
                 ],
             }
         ];
@@ -214,7 +237,7 @@ export class CSVData {
             { identifier: 'emphasis', colorspace: 'hex', value: '#00b0ff' },
             { identifier: 'auxiliary', colorspace: 'hex', values: ['#00aa5e', '#71237c'] },
             { identifier: 'inner', colorspace: 'hex', values: ['#e8eaee', '#eef0f4'] },
-            { identifier: 'leaf', preset: 'BrBG', steps: 7 },
+            { identifier: 'leaf', preset: 'Set1', steps: 6 },
         ];
 
         config.layout = {
@@ -240,7 +263,6 @@ export class CSVData {
                 colorMap: 'color:leaf',
                 height: 'bufferView:heights-normalized',
                 colors: 'bufferView:colors-normalized',
-                colorsNormalized: true
             },
             emphasis: { outline: new Array<number>(), highlight: new Array<number>() },
             heightScale: 0.5,
