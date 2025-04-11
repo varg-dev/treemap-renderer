@@ -14,13 +14,14 @@ import { Configuration, Topology, NodeSort } from '../../source/treemap-renderer
 
 
 export class CSVHeader {
-    public csv_delimiter: string;
-    public id_column: string;
-    public parent_column: string;
-    public weight_column: string;
-    public height_column: string;
-    public color_column: string;
-    public label_column: string;
+    public csv_delimiter: string = ';';
+    public id_column: string = '';
+    public parent_column: string = '';
+    public weight_column: string = '';
+    public height_column: string = '';
+    public color_column: string = '';
+    public neutral_element: number = 0.5;
+    public label_column: string = '';
 }
 
 
@@ -52,6 +53,8 @@ export class CSVData {
                 header.height_column = value || '';
             } else if (key == 'colors') {
                 header.color_column = value || '';
+            } else if (key == 'neutralElement') {
+                header.neutral_element = parseFloat(value) || header.neutral_element;
             } else if (key == 'labels') {
                 header.label_column = value || '';
             } else {
@@ -185,7 +188,7 @@ export class CSVData {
                 identifier: 'colors-normalized',
                 source: 'buffer:source-colors',
                 transformations: [
-                    { type: 'normalize', operation: 'diverging', neutralElement: 0.5 }
+                    { type: 'normalize', operation: 'diverging', neutralElement: header.neutral_element }
                 ],
             }
         ];
