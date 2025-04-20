@@ -553,11 +553,10 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
 
         /** @todo: take eye, center, and up from configuration */
 
-        console.log(this._visualization);
         if (this._visualization.visualizationType == VisualizationType.VISUALIZATION_2D) {
             this._camera = new Camera2D();
-            this._camera.eye = vec3.fromValues(0, 5.0, 0.2);
-            this._camera.center = vec3.fromValues(0.0, 0.0, 0.2);
+            this._camera.eye = vec3.fromValues(0, 5.0, 0.0);
+            this._camera.center = vec3.fromValues(0.0, 0.0, 0.0);
             this._camera.up = vec3.fromValues(0.0, 0.0, -1.0);
         } else {
             this._camera = new Camera3D();

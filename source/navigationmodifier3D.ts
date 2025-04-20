@@ -11,6 +11,7 @@ const clamp3 = gl_matrix_extensions.clamp3;
 const assert = auxiliaries.assert;
 
 export class Navigationmodifier3D extends AbstractNavigationModifier {
+
     /**
      * Scales the distance between the y = 0 constrained camera center and the camera's eye.
      * @param step - If undefined, the distance of initial and current position is used, else the step

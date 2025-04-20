@@ -14,6 +14,7 @@ import { AbstractCamera } from './abstractcamera';
  */
 export class Camera2D extends AbstractCamera {
 
+    private _scale: number = 1.0;
     /**
      * Constructor setting up the camera's eye, center and up vectors.
      * @param eye - The viewpoint of the virtual camera
@@ -22,6 +23,38 @@ export class Camera2D extends AbstractCamera {
      */
     constructor(eye?: vec3, center?: vec3, up?: vec3) {
         super(eye, center, up);
+    }
+
+    /**
+     * Position of the virtual camera in a virtual 3D scene, the point of view.
+     */
+    get eye(): vec3 {
+        return this._eye;
+    }
+
+    /**
+     * Sets the eye. Invalidates the view.
+     */
+    set eye(eye: vec3) {
+        if (vec3.equals(this._eye, eye)) {
+            return;
+        }
+        this._eye = vec3.clone(eye);
+        this.invalidate(true, false);
+    }
+
+    set scale(scale: number) {
+        if (this._scale === scale) {
+            return;
+        }
+        this._scale = scale;
+        this.invalidate(false, true);
+        //TODO review if constraints are required
+
+    }
+
+    get scale(): number {
+        return this._scale;
     }
 
     /**
@@ -101,8 +134,7 @@ export class Camera2D extends AbstractCamera {
         if (this._projection) { // return cached value
             return this._projection;
         }
-        console.log(this.width, this.height, this._aspect);
-        this._projection = mat4.ortho(gl_matrix_extensions.m4(), -this._aspect, this._aspect, -1.0, 1.0, this.near, this.far)
+        this._projection = mat4.ortho(gl_matrix_extensions.m4(), -this._aspect * this._scale, this._aspect * this._scale, -this._scale, this._scale, this.near, this.far)
         return this._projection;
     }
 

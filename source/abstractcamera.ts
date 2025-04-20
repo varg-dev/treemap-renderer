@@ -106,20 +106,12 @@ export abstract class AbstractCamera {
     /**
      * Position of the virtual camera in a virtual 3D scene, the point of view.
      */
-    get eye(): vec3 {
-        return this._eye;
-    }
+    abstract get eye(): vec3;
 
     /**
      * Sets the eye. Invalidates the view.
      */
-    set eye(eye: vec3) {
-        if (vec3.equals(this._eye, eye)) {
-            return;
-        }
-        this._eye = vec3.clone(eye);
-        this.invalidate(true, false);
-    }
+    abstract set eye(eye: vec3);
 
     /**
      * Look-at point into a virtual 3D scene.
