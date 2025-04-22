@@ -2,12 +2,10 @@ import {AbstractNavigationModifier} from "./abstractnavigationmodifier";
 import {Camera2D} from "./camera2D";
 import {auxiliaries, gl_matrix_extensions, vec2} from 'webgl-operate';
 
-
 const v2 = gl_matrix_extensions.v2;
 const sign = gl_matrix_extensions.sign;
 
 const assert = auxiliaries.assert;
-
 
 export class Navigationmodifier2D extends AbstractNavigationModifier {
     protected static readonly SCALE_FACTOR = 0.004;
@@ -32,12 +30,38 @@ export class Navigationmodifier2D extends AbstractNavigationModifier {
         } else {
             scale = -sign(step) * AbstractNavigationModifier.SCALE_STEP_FACTOR;
         }
-        scale = /*clamp(*/scale * AbstractNavigationModifier.SCALE_FACTOR/*, this._minScale!, this._maxScale!)*/;
 
+        const targetScale = (this._camera as any as Camera2D).scale + (scale * AbstractNavigationModifier.SCALE_FACTOR);
 
-        //TODO: Revisit constraints and protections
+        console.log(this.initialPoints[0].world);
         //TODO: zoom to targeted point by shifting eye to mouse intersection
-        (this._camera as any as Camera2D).scale = (this._camera as any as Camera2D).scale + scale;
+        if(targetScale > this._maxScale!) {
+            (this._camera as any as Camera2D).scale = this._maxScale!;
+        } else if(targetScale < this._minScale!) {
+            (this._camera as any as Camera2D).scale = this._minScale!;
+        } else {
+            (this._camera as any as Camera2D).scale = targetScale;
+        }
+        //TODO find a way to either invalidate projection, view projection and view projection inverse matrices or find a way to update them
+        //TODO calculate the new world-position of the mouse
+        //TODO calculate difference between mouse positions
+        //TODO add difference to center (and move eye respectively)
+        /*
+        this._camera.center = [targetCenter[0] * targetScale, 0.0, targetCenter[2] * targetScale];
+        this._camera.eye = [this._camera.center[0], this._camera.eye[1], this._camera.center[2]];
+        */
+
+    }
+
+    protected initiateScaleConstraints(override: boolean): void {
+        /**
+         * TODO not sure about the override parameter
+         * TODO How to get good constraints?
+         */
+
+        this._minScale = 0.01;
+        this._maxScale = 10.0;
+
     }
 
 }

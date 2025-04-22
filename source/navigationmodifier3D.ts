@@ -1,7 +1,6 @@
 import {AbstractNavigationModifier} from "./abstractnavigationmodifier";
 import {auxiliaries, gl_matrix_extensions, mat4, ray_math, vec2, vec3} from 'webgl-operate';
 
-
 const v2 = gl_matrix_extensions.v2;
 const v3 = gl_matrix_extensions.v3;
 const sign = gl_matrix_extensions.sign;
@@ -101,6 +100,46 @@ export class Navigationmodifier3D extends AbstractNavigationModifier {
         }
 
         this._camera.eye = eye;
+    }
+
+    /**
+     * Compute SCALE CONSTRAINTS: (1) the camera's eye is expected to reside above a plane at scene
+     * height (including as safety offset accounting for the camera's z-near value). (2) the maximum
+     * distance between the camera's eye and the center is limited by a preset value. (3) This
+     * constraint is enforced within scale.
+     * @param override - If true, minimal scale constraints are used. Preferred constraints are applied
+     * otherwise.
+     */
+    protected initiateScaleConstraints(override: boolean): void {
+        const centerToEye = vec3.sub(v3(), this.initialEye, this.initialCenter);
+        /* Valid scale constraints are expected for scaling, skip only when no subsequent scales are
+        expected. */
+
+        /**
+         * Compute the minimal allowed scale (for the distance from camera eye to initial point 0) for
+         * enforcement of scale constraints: the camera's eye must be above scene height.
+         */
+        const lInverse = 1.0 / vec3.length(centerToEye);
+        if (override) {
+            this._minScale = this._camera.near * lInverse - 1.0;
+            this._maxScale = this._camera.far * lInverse - 1.0;
+            return;
+        }
+
+        const intersection = ray_math.rayPlaneIntersection(this.initialEye, this.initialCenter
+            , [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
+        if (!intersection) {
+            return;
+        }
+
+        this._minScale = this._camera.near * AbstractNavigationModifier.MIN_NEAR_PLANE_FACTOR * lInverse - 1.0;
+
+        /**
+         * Compute the maximal allowed scale (for the distance from camera eye to initial point 0) for
+         * enforcement of scale constraints: the camera's eye must be a certain distance away from the
+         * camera's center.
+         */
+        this._maxScale = AbstractNavigationModifier.MAX_DISTANCE_TO_SQUARE * lInverse - 1.0;
     }
 
 }
