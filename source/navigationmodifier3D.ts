@@ -11,10 +11,35 @@ const assert = auxiliaries.assert;
 
 export class Navigationmodifier3D extends AbstractNavigationModifier {
 
+    translate(): void {
+        this.assert_valid();
+
+        const initialWorldPos = this.initialPoints[0].world;
+        const currentWorldPos = this.currentPoints[0].world;
+        if (!initialWorldPos || !currentWorldPos) {
+            return;
+        }
+        const translate = vec3.subtract(v3(), initialWorldPos, currentWorldPos);
+        /* Enforce center within square constraints (bound translate vector to max negative and positive
+        translation). */
+        if (this._maxNegativeTranslate && this._maxPositiveTranslate) {
+            clamp3(translate, translate, this._maxNegativeTranslate, this._maxPositiveTranslate);
+        }
+
+        // apply translation to the camera's center and eye
+        this._camera.eye = vec3.add(v3(), this.initialEye, translate);
+        const center = vec3.add(v3(), this.initialCenter, translate);
+        // enforce camera y = 0 by computing eye-center ray intersection with ground plane (y = 0)
+        const intersection = ray_math.rayPlaneIntersection(this._camera.eye, center);
+        if (!intersection) {
+            return;
+        }
+        this._camera.center = intersection;
+    }
+
     /**
      * Scales the distance between the y = 0 constrained camera center and the camera's eye.
-     * @param step - If undefined, the distance of initial and current position is used, else the step
-     * value's sign is used for zoom direction (-1 for increase, +1 for decrease in distance).
+     * @see AbstractNavigationModifier.scale
      */
     scale(step?: number): void {
         this.assert_valid();

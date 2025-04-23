@@ -6,11 +6,9 @@ import { CameraModifier } from 'webgl-operate';
 
 /* spellchecker: enable */
 
-//TODO apply this to the camera classes
 const v2 = gl_matrix_extensions.v2;
 const v3 = gl_matrix_extensions.v3;
 const sign = gl_matrix_extensions.sign;
-const clamp3 = gl_matrix_extensions.clamp3;
 
 const DEG2RAD = auxiliaries.DEG2RAD;
 const assert = auxiliaries.assert;
@@ -144,7 +142,7 @@ export abstract class AbstractNavigationModifier extends CameraModifier {
      * Compute ROTATE CONSTRAINTS: (1) y-axis rotation is limited to a small range, always keeping the
      * front of the square in 'forward facing'. This decreases chance of unintended orientation and
      * miscommunication of the depicted geometry. (2) the x-axis rotation stop near the bottom (cannot
-     * move eye below y = 0), further more an additional angular offset is used to make square
+     * move eye below y = 0), furthermore an additional angular offset is used to make square
      * translation feasible (full front view does not expose square are to pan on). x-axis rotation also
      * stops right before reaching the up-vector.
      * @param override - If true, minimal rotate constraints are used. Preferred constraints are applied
@@ -271,50 +269,23 @@ export abstract class AbstractNavigationModifier extends CameraModifier {
         return true;
     }
 
+    //TODO translate does not have to be abstract. Consider moving implementation to abstractNavigationModifier.ts.
     /**
      * Creates a transform for translating the camera eye and center by the difference between the
      * initial intersection point with the scene and subsequent intersections with the initial reference
      * plane. This results in a constrained panning with the user holding the initial contact point
      * within the scene in hand.
      */
-    translate(): void {
-        this.assert_valid();
-
-        const initialWorldPos = this.initialPoints[0].world;
-        const currentWorldPos = this.currentPoints[0].world;
-        if (!initialWorldPos || !currentWorldPos) {
-            return;
-        }
-        const translate = vec3.subtract(v3(), initialWorldPos, currentWorldPos);
-        /* Enforce center within square constraints (bound translate vector to max negative and positive
-        translation). */
-        if (this._maxNegativeTranslate && this._maxPositiveTranslate) {
-            clamp3(translate, translate, this._maxNegativeTranslate, this._maxPositiveTranslate);
-        }
-
-        // apply translation to the camera's center and eye
-        this._camera.eye = vec3.add(v3(), this.initialEye, translate);
-        const center = vec3.add(v3(), this.initialCenter, translate);
-        // enforce camera y = 0 by computing eye-center ray intersection with ground plane (y = 0)
-        const intersection = ray_math.rayPlaneIntersection(this._camera.eye, center);
-        if (!intersection) {
-            return;
-        }
-        this._camera.center = intersection;
-    }
+    abstract translate(): void ;
 
     /**
-     * TODO Where to put the comments in abstract classes?
-     * Scales the distance between the y = 0 constrained camera center and the camera's eye.
-     * @param step - If undefined, the distance of initial and current position is used, else the step
-     * value's sign is used for zoom direction (-1 for increase, +1 for decrease in distance).
+     * Scales the view frustum of the camera. Does not change the position of the camera in space.
+     * @see AbstractNavigationModifier.scale
      */
     abstract scale(step?: number): void;
 
     /**
-     * Rotate the camera at the center. The horizontal delta of the initial and current screen position
-     * is used for rotation around the y-axis. The vertical delta is used for rotation around the x-Axis
-     * (oriented towards the screen/camera).
+     * Rotate the camera at the center.
      */
     abstract rotate(): void;
 

@@ -1,5 +1,11 @@
 import { mat4, vec3, tuples, auxiliaries } from 'webgl-operate';
 
+/**
+ * Virtual 3D camera specified by eye, center, up, fovy, near, far, and a viewport size. It provides access to cached
+ * view, projection, and view projection matrices. Cached by means of whenever one of the attributes change, all
+ * matrices are invalidated and recalculated only once and only when requested. Please note that eye denotes the
+ * position in a virtual 3D scene and center denotes the position which is being looked at.
+ */
 export abstract class AbstractCamera {
     private static readonly DEFAULT_EYE: vec3 = vec3.fromValues(0.0, 0.0, 1.0);
     private static readonly DEFAULT_CENTER: vec3 = vec3.fromValues(0.0, 0.0, 0.0);
@@ -57,6 +63,48 @@ export abstract class AbstractCamera {
     /** @see {@link altered} */
     protected _altered = false;
 
+    //TODO not all of these have to be abstract. Consider moving implementation to abstractCamera.ts.
+
+    /**
+     * Either returns the cached view matrix or derives the current one after invalidation and caches it.
+     */
+    abstract get view(): mat4;
+    /**
+     * Either returns the inverse cached view matrix or derives the current one after invalidation and caches it.
+     */
+    abstract get viewInverse(): mat4 | undefined;
+
+    /**
+     * Either returns the cached projection matrix or derives the current one after invalidation and caches it.
+     */
+    abstract get projection(): mat4;
+    /**
+     * Either returns the cached inverse projection matrix or derives the current one after invalidation and caches it.
+     */
+    abstract get projectionInverse(): mat4 | undefined;
+
+    /**
+     * Returns the view projection matrix based on view and projection. This is also cached (since matrix
+     * multiplication is involved).
+     */
+    abstract get viewProjection(): mat4;
+    /**
+     * Returns the inverse view projection matrix based on view and projection. This is also cached (since matrix
+     * multiplication is involved).
+     */
+    abstract get viewProjectionInverse(): mat4 | undefined;
+
+    /**
+     * Returns the matrix which contains the operations that are applied to the viewProjection matrix.
+     * For now this is only used by the TiledRenderer to adjust the NDC-coordinates to the tile.
+     */
+    abstract get postViewProjection(): mat4;
+    /**
+     * Sets the matrix which contains the operations that are applied to the viewProjection matrix.
+     * For now this is only used by the TiledRenderer to adjust the NDC-coordinates to the tile.
+     */
+    abstract set postViewProjection(matrix: mat4);
+
     /**
      * Constructor setting up the camera's eye, center and up vectors.
      * @param eye - The viewpoint of the virtual camera
@@ -67,6 +115,32 @@ export abstract class AbstractCamera {
         this._eye = eye ? vec3.clone(eye) : vec3.clone(AbstractCamera.DEFAULT_EYE);
         this._center = center ? vec3.clone(center) : vec3.clone(AbstractCamera.DEFAULT_CENTER);
         this._up = up ? vec3.clone(up) : vec3.clone(AbstractCamera.DEFAULT_UP);
+    }
+
+    /**
+     * Computes a vertical field of view angle based on the display height and distance to eye. Since both parameters
+     * are highly dependent of the device, this function can only be used to derive a rough estimate for a reasonable
+     * field of view. Note that both parameters should be passed using the same unit, e.g., inch or centimeters.
+     * @param elementDisplayHeight - Height of an element on the display.
+     * @param eyeToDisplayDistance - Distance from the users eye to that element.
+     * @returns - Vertical field of view angle in radian.
+     */
+    static calculateFovY(elementDisplayHeight: number, eyeToDisplayDistance: number): number {
+        return Math.atan(elementDisplayHeight * 0.5 / eyeToDisplayDistance) * 2.0;
+    }
+
+    /**
+     * With this function the view of a physical camera can be emulated. The width and focal length of
+     * a lens are used to generate the correct field of view.
+     * Blender camera presets can be imported by using the camera setting 'HorizontalFit' and using the
+     * width and focal length values in this function.
+     * See: https://www.scantips.com/lights/fieldofviewmath.html
+     * @param sensorWidth - Width of the sensor in mm
+     * @param focalLength - Focal length of the lens in mm
+     */
+    fovFromLens(sensorWidth: number, focalLength: number): void {
+        const horizontalAngle = 2.0 * Math.atan(sensorWidth / (2.0 * focalLength));
+        this.fovx = horizontalAngle * auxiliaries.RAD2DEG;
     }
 
     /**
@@ -92,26 +166,22 @@ export abstract class AbstractCamera {
     }
 
     /**
-     * Computes a vertical field of view angle based on the display height and distance to eye. Since both parameters
-     * are highly dependent of the device, this function can only be used to derive a rough estimate for a reasonable
-     * field of view. Note that both parameters should be passed using the same unit, e.g., inch or centimeters.
-     * @param elementDisplayHeight - Height of an element on the display.
-     * @param eyeToDisplayDistance - Distance from the users eye to that element.
-     * @returns - Vertical field of view angle in radian.
-     */
-    static calculateFovY(elementDisplayHeight: number, eyeToDisplayDistance: number): number {
-        return Math.atan(elementDisplayHeight * 0.5 / eyeToDisplayDistance) * 2.0;
-    }
-
-    /**
      * Position of the virtual camera in a virtual 3D scene, the point of view.
      */
-    abstract get eye(): vec3;
+    get eye(): vec3 {
+        return this._eye;
+    }
 
     /**
      * Sets the eye. Invalidates the view.
      */
-    abstract set eye(eye: vec3);
+    set eye(eye: vec3) {
+        if (vec3.equals(this._eye, eye)) {
+            return;
+        }
+        this._eye = vec3.clone(eye);
+        this.invalidate(true, false);
+    }
 
     /**
      * Look-at point into a virtual 3D scene.
@@ -149,13 +219,39 @@ export abstract class AbstractCamera {
         this.invalidate(true, false);
     }
 
-    abstract fovFromLens(sensorWidth: number, focalLength: number): void;
+    /**
+     * Vertical field of view in degree.
+     */
+    get fovy(): GLfloat {
+        return this._fovy;
+    }
 
-    abstract get fovy(): GLfloat;
-    abstract set fovy(fovy: GLfloat);
+    /**
+     * Sets the vertical field-of-view in degrees. Invalidates the projection.
+     */
+    set fovy(fovy: GLfloat) {
+        if (this._fovy === fovy) {
+            return;
+        }
+        this._fovy = fovy;
+        this.invalidate(false, true);
+    }
 
-    abstract get fovx(): GLfloat;
-    abstract set fovx(fovy: GLfloat);
+    /**
+     * Sets the horizontal field-of-view in degrees. Invalidates the projection.
+     * Note that internally, this will be translated to the corresponding the vertical field.
+     */
+    set fovx(fovx: GLfloat) {
+        const horizontalAngle = fovx * auxiliaries.DEG2RAD;
+        const verticalAngle = 2.0 * Math.atan(Math.tan(horizontalAngle / 2.0) * (1.0 / this.aspect));
+
+        const fovy = verticalAngle * auxiliaries.RAD2DEG;
+        if (this._fovy === fovy) {
+            return;
+        }
+        this._fovy = fovy;
+        this.invalidate(false, true);
+    }
 
     /**
      * Distance of near-plane in view coordinates.
@@ -249,18 +345,6 @@ export abstract class AbstractCamera {
     get aspect(): GLfloat {
         return this._aspect;
     }
-
-    abstract get view(): mat4;
-    abstract get viewInverse(): mat4 | undefined;
-
-    abstract get projection(): mat4;
-    abstract get projectionInverse(): mat4 | undefined;
-
-    abstract get viewProjection(): mat4;
-    abstract get viewProjectionInverse(): mat4 | undefined;
-
-    abstract get postViewProjection(): mat4;
-    abstract set postViewProjection(matrix: mat4);
 
     /**
      * Whether or not any other public property has changed. Please note that the alteration status is detached from

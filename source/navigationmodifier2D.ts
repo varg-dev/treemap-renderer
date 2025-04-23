@@ -1,10 +1,11 @@
 import {AbstractNavigationModifier} from "./abstractnavigationmodifier";
 import {Camera2D} from "./camera2D";
-import {auxiliaries, gl_matrix_extensions, vec2, vec3} from 'webgl-operate';
+import {auxiliaries, gl_matrix_extensions, ray_math, vec2, vec3} from 'webgl-operate';
 
 const v2 = gl_matrix_extensions.v2;
 const v3 = gl_matrix_extensions.v3;
 const sign = gl_matrix_extensions.sign;
+const clamp3 = gl_matrix_extensions.clamp3;
 
 const assert = auxiliaries.assert;
 
@@ -12,7 +13,37 @@ export class Navigationmodifier2D extends AbstractNavigationModifier {
     protected static readonly SCALE_FACTOR = 0.004;
     protected static readonly SCALE_STEP_FACTOR = 16.0;
 
+    translate(): void {
+        this.assert_valid();
+
+        const initialWorldPos = this.initialPoints[0].world;
+        const currentWorldPos = this.currentPoints[0].world;
+        if (!initialWorldPos || !currentWorldPos) {
+            return;
+        }
+        const translate = vec3.subtract(v3(), initialWorldPos, currentWorldPos);
+        /* Enforce center within square constraints (bound translate vector to max negative and positive
+        translation). */
+        if (this._maxNegativeTranslate && this._maxPositiveTranslate) {
+            clamp3(translate, translate, this._maxNegativeTranslate, this._maxPositiveTranslate);
+        }
+
+        // apply translation to the camera's center and eye
+        this._camera.eye = vec3.add(v3(), this.initialEye, translate);
+        const center = vec3.add(v3(), this.initialCenter, translate);
+        // enforce camera y = 0 by computing eye-center ray intersection with ground plane (y = 0)
+        const intersection = ray_math.rayPlaneIntersection(this._camera.eye, center);
+        if (!intersection) {
+            return;
+        }
+        this._camera.center = intersection;
+    }
+
+    /**
+     * Rotation is not supported and not implemented by the 2D camera navigation.
+     */
     rotate(): void {}
+
 
     scale(step?: number): void {
         this.assert_valid();
@@ -55,13 +86,10 @@ export class Navigationmodifier2D extends AbstractNavigationModifier {
         this._camera.eye = [this._camera.center[0], this._camera.eye[1], this._camera.center[2]];
     }
 
+    /**
+     * @todo these constraints are just magic numbers at the moment. Evaluate if they can be chosen dynamically, and if that is required.
+     */
     protected initiateScaleConstraints(override: boolean): void {
-        /**
-         *TODO
-         *  - not sure about the override parameter
-         *  - How to get good constraints?
-         *  - Crashes when zooming far away from the treemap. Why? How to stop that?
-         */
 
         this._minScale = 0.01;
         this._maxScale = 10.0;
