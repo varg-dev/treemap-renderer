@@ -5,7 +5,8 @@ import { auxiliaries, gl_matrix_extensions, vec2, vec4 } from 'webgl-operate';
 const assert = auxiliaries.assert;
 const v2 = gl_matrix_extensions.v2;
 
-import { Camera, Label, Projected3DLabel } from 'webgl-operate';
+import { Label, Projected3DLabel } from 'webgl-operate';
+import { AbstractCamera } from './abstractcamera';
 
 import { Index2D } from './index2d';
 import { LabelArea } from './labelarea';
@@ -106,7 +107,7 @@ export class AdaptiveLabelPlacement {
      * Returns the extent in normalized screen space for leaf labels (wrapping Projected3DLabel)
      * @param leafLabel - a leaf label for which the extent is returned.
      */
-    protected static getNDCExtentForLeafLabel(leafLabel: LeafLabel, camera: Camera): vec2 {
+    protected static getNDCExtentForLeafLabel(leafLabel: LeafLabel, camera: AbstractCamera): vec2 {
         assert(camera.width !== 0 && camera.height !== 0,
             `camera viewport is invalid: ${camera.width} ${camera.height}`);
 
@@ -216,7 +217,7 @@ export class AdaptiveLabelPlacement {
      * @param positions - all relative label positions that should be considered
      */
     protected static computeLabelAreas(labels: LeafLabel[], positions: RelativeLabelPosition.Type[],
-        camera: Camera): LabelArea[][] {
+        camera: AbstractCamera): LabelArea[][] {
 
         const result: LabelArea[][] = [];
         for (const leafLabel of labels) {
@@ -293,7 +294,7 @@ export class AdaptiveLabelPlacement {
      * @param relativePadding - applied to every label to calculate their padded area
      */
     protected static simulatedAnnealing(labels: LeafLabel[], penaltyFunction: PenaltyFunction,
-        relativePadding: vec2, camera: Camera): void {
+        relativePadding: vec2, camera: AbstractCamera): void {
 
         const positions: RelativeLabelPosition.Type[] = [
             RelativeLabelPosition.Type.UpperRight, RelativeLabelPosition.Type.UpperLeft,
@@ -379,7 +380,7 @@ export class AdaptiveLabelPlacement {
      * @param camera - the current camera
      */
     protected static greedy(labels: LeafLabel[], penaltyFunction: PenaltyFunction,
-        relativePadding: vec2, camera: Camera): void {
+        relativePadding: vec2, camera: AbstractCamera): void {
 
         const labelAreas: LabelArea[] = [];
         const relPositions: RelativeLabelPosition.Type[] = [
@@ -427,7 +428,7 @@ export class AdaptiveLabelPlacement {
      * @param labels - all labels that should be wrapped
      * @param camera - the current camera to calculate the labels' positions in screen space.
      */
-    protected static prepareLeafLabels(labels: Projected3DLabel[], camera: Camera): LeafLabel[] {
+    protected static prepareLeafLabels(labels: Projected3DLabel[], camera: AbstractCamera): LeafLabel[] {
         const leafLabels: LeafLabel[] = [];
 
         labels.forEach((leafLabel, index) => {
@@ -498,7 +499,7 @@ export class AdaptiveLabelPlacement {
      * @param camera - the current camera to detect overlapping in screen space
      * @returns an object to indicate if visibility and/or positioning has changes.
      */
-    public static adaptPositionToPreventOverlapGreedy(labels: Projected3DLabel[], camera: Camera)
+    public static adaptPositionToPreventOverlapGreedy(labels: Projected3DLabel[], camera: AbstractCamera)
         : PlacementChanged {
 
         const leafLabels = this.prepareLeafLabels(labels, camera);
@@ -524,7 +525,7 @@ export class AdaptiveLabelPlacement {
      * @returns an object to indicate if visibility and/or positioning has changes.
      */
     public static adaptPositionToPreventOverlapSimulatedAnnealing(labels: Projected3DLabel[],
-        camera: Camera): PlacementChanged {
+        camera: AbstractCamera): PlacementChanged {
 
         const leafLabels = this.prepareLeafLabels(labels, camera);
 

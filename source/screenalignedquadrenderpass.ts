@@ -4,7 +4,6 @@
 import { auxiliaries, tuples } from 'webgl-operate';
 
 import {
-    Camera,
     ChangeLookup,
     Context,
     Framebuffer,
@@ -17,6 +16,7 @@ import { ScreenAlignedQuadGeometry } from './screenalignedquadgeometry';
 
 import SAQ_VERT_SOURCE from './shaders/screenalignedquad.vert';
 import SAQ_FRAG_SOURCE from './shaders/screenalignedquad.frag';
+import {AbstractCamera} from "./abstractcamera";
 
 /* spellchecker: enable */
 
@@ -43,7 +43,7 @@ export class ScreenAlignedQuadRenderPass extends Initializable {
     protected _target: Framebuffer;
 
     /** @see {@link camera} */
-    protected _camera: Camera;
+    protected _camera: AbstractCamera;
 
     /** @see {@link ndcOffset} */
     protected _ndcOffset: tuples.GLfloat2;
@@ -208,7 +208,7 @@ export class ScreenAlignedQuadRenderPass extends Initializable {
     /**
      * Sets the camera, from where the view projection matrix and the aspect ratio will be retrieved.
      */
-    set camera(camera: Camera) {
+    set camera(camera: AbstractCamera) {
         this.assertInitialized();
         if (this._camera === camera) {
             return;
