@@ -18,6 +18,10 @@ export class Navigationmodifier2D extends AbstractNavigationModifier {
         this.assert_valid();
         assert(this._minScale !== undefined && this._maxScale !== undefined,
             `valid scale constraints expected`);
+        if(this.initialPoints[0].world === undefined) {
+            return;
+        }
+
         let scale: number;
         if (undefined === step) {
             const currentScreenPos = this.currentPoints[0].screen;
@@ -32,7 +36,7 @@ export class Navigationmodifier2D extends AbstractNavigationModifier {
             scale = -sign(step) * AbstractNavigationModifier.SCALE_STEP_FACTOR;
         }
 
-        const oldTargetWorld = this.coordsAt(this.initialPoints[0].screen, false);
+        const initialWorldPos = this.initialPoints[0].world;
         const targetScale = (this._camera as any as Camera2D).scale + (scale * AbstractNavigationModifier.SCALE_FACTOR);
 
         if(targetScale > this._maxScale!) {
@@ -44,10 +48,10 @@ export class Navigationmodifier2D extends AbstractNavigationModifier {
         }
 
         // reference must be false, otherwise the outdated initial viewProjectionInverse will be used
-        const scaledTargetWorld = this.coordsAt(this.initialPoints[0].screen, false);
-        const targetDelta = vec3.mul(v3(), vec3.sub(v3(), oldTargetWorld, scaledTargetWorld), [1.0, 0.0, 1.0]);
+        const scaledWorldPos = this.coordsAt(this.initialPoints[0].screen, false);
+        const deltaWorldPos = vec3.mul(v3(), vec3.sub(v3(), initialWorldPos, scaledWorldPos), [1.0, 0.0, 1.0]);
 
-        this._camera.center = vec3.add(v3(), this.initialCenter, targetDelta);
+        this._camera.center = vec3.add(v3(), this.initialCenter, deltaWorldPos);
         this._camera.eye = [this._camera.center[0], this._camera.eye[1], this._camera.center[2]];
     }
 
