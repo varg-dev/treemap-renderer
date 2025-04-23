@@ -77,10 +77,12 @@ export default defineConfig(({ mode }) => {
                         main: resolve(__dirname, 'index.html'),
                         explicit: resolve(__dirname, 'examples/csv-with-explicit-inner-nodes/index.html'),
                         twodimensional: resolve(__dirname, 'examples/2D-view-nominal-data-csv-with-explicit-inner-nodes/index.html'),
+                        nominal: resolve(__dirname, 'examples/nominal-data-csv-with-explicit-inner-nodes/index.html'),
                         grouping: resolve(__dirname, 'examples/csv-with-grouping/index.html'),
                         implicit: resolve(__dirname, 'examples/csv-with-implicit-inner-nodes/index.html'),
                         diverging: resolve(__dirname, 'examples/diverging-data-csv-with-explicit-inner-nodes/index.html'),
                         direct: resolve(__dirname, 'examples/direct-config/index.html'),
+
                     },
                     output: {
                         inlineDynamicImports: false,

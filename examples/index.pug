@@ -26,12 +26,37 @@ block content
 
         .col-lg-4.col-sm-6.col-xs-12.mb-4
             .card
+                img.card-img-top(src="examples/csv-with-implicit-inner-nodes/thumbnail.png")
+                .card-body
+                    h3.card-title
+                        | Implicit Inner Nodes Treemap
+                    p.card-text
+                        | This treemap is defined as a CSV, where the inner nodes are implicitly declared as part of a leaf nodes' path.
+                        | Here, this path is slash-separated, similar to UNIX filenames.
+                    a.btn.btn-primary(href=base + "examples/csv-with-implicit-inner-nodes/")
+                        | Try Out
+
+        .col-lg-4.col-sm-6.col-xs-12.mb-4
+            .card
+                img.card-img-top(src="examples/csv-with-grouping/thumbnail.png")
+                .card-body
+                    h3.card-title
+                        | Grouped Treemap
+                    p.card-text
+                        | This treemap is defined as a CSV, where a grouping specification associates attributes of the leaf nodes.
+                        | The equal values among leaf nodes in those attributes results in a common parent, and thus, forming a group.
+                        | Multiple attributes for grouping can be chained using the slash as path separator.
+                    a.btn.btn-primary(href=base + "examples/csv-with-grouping/")
+                        | Try Out
+
+        .col-lg-4.col-sm-6.col-xs-12.mb-4
+            .card
                 img.card-img-top(src="examples/2D-view-csv-with-explicit-inner-nodes/thumbnail.png")
                 .card-body
                     h3.card-title
                         | 2D Treemap
                     p.card-text
-                        | This treemap is defined like the Explicit Inner Nodes Treemap. It showcases the 2D treemap.
+                        | This treemap is defined like the Explicit Inner Nodes Treemap. It showcases the 2D Treemap.
                     a.btn.btn-primary(href=base + "examples/2D-view-csv-with-explicit-inner-nodes/")
                         | Try Out
 
@@ -48,28 +73,14 @@ block content
 
         .col-lg-4.col-sm-6.col-xs-12.mb-4
             .card
-                img.card-img-top(src="examples/csv-with-implicit-inner-nodes/thumbnail.png")
+                img.card-img-top(src="examples/nominal-data-csv-with-explicit-inner-nodes/thumbnail.png")
                 .card-body
                     h3.card-title
-                      | Implicit Inner Nodes Treemap
+                        | Nominal Data Treemap
                     p.card-text
-                      | This treemap is defined as a CSV, where the inner nodes are implicitly declared as part of a leaf nodes' path.
-                      | Here, this path is slash-separated, similar to UNIX filenames.
-                    a.btn.btn-primary(href=base+"examples/csv-with-implicit-inner-nodes/")
-                      | Try Out
-
-        .col-lg-4.col-sm-6.col-xs-12.mb-4
-            .card
-                img.card-img-top(src="examples/csv-with-grouping/thumbnail.png")
-                .card-body
-                    h3.card-title
-                      | Grouped Treemap
-                    p.card-text
-                      | This treemap is defined as a CSV, where a grouping specification associates attributes of the leaf nodes.
-                      | The equal values among leaf nodes in those attributes results in a common parent, and thus, forming a group.
-                      | Multiple attributes for grouping can be chained using the slash as path separator.
-                    a.btn.btn-primary(href=base+"examples/csv-with-grouping/")
-                      | Try Out
+                        | This treemap is defined like the Explicit Inner Nodes Treemap. It showcases a qualitative color scheme to visualize nominal data.
+                    a.btn.btn-primary(href=base + "examples/nominal-data-csv-with-explicit-inner-nodes/")
+                        | Try Out
 
         .col-lg-4.col-sm-6.col-xs-12.mb-4
             .card
