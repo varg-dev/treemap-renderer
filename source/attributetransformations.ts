@@ -279,6 +279,36 @@ export namespace AttributeTransformations {
                     factor = 1 / max;
                 }
                 break;
+            case 'diverging':
+                {
+                    const neutralElement = (transform.neutralElement === undefined ? 0.0 : transform.neutralElement);
+                    let max: number | undefined;
+                    let min: number | undefined;
+                    tree.forEachLeafNode((leaf: Node) => {
+                        const value = target[leaf.index];
+
+                        max = max === undefined ? value : Math.max(max, value);
+                        min = min === undefined ? value : Math.min(min, value);
+                    });
+
+                    assert(max !== undefined, `Valid max expected`);
+                    assert(min !== undefined, `Valid min expected`);
+
+                    if (min === undefined) {
+                        min = 0.0;
+                    }
+
+                    if (max === undefined) {
+                        max = 1.0;
+                    }
+
+                    const maxDelta = Math.max(Math.abs(neutralElement - min), Math.abs(max - neutralElement));
+
+                    offset = maxDelta - neutralElement;
+                    factor = 1 / (2 * maxDelta);
+
+                }
+                break;
             default:
                 break;
         }
