@@ -57,7 +57,6 @@ export class Navigation {
 
     /**
      * @todo - Deprecated modifier is used for now.
-     * TODO: What do you mean, deprecated?
      */
 
     protected _cameraModifier : AbstractNavigationModifier;
@@ -407,7 +406,7 @@ export class Navigation {
      */
     set camera(camera: AbstractCamera) {
         this._camera = camera;
-        //TODO this is highly illegal
+        //TODO this should be fixed by implementing the 2D Camera on the webgl-operate side
         this._cameraModifier.camera = camera as any as Camera;
     }
 

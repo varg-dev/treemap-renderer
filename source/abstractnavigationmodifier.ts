@@ -304,7 +304,7 @@ export abstract class AbstractNavigationModifier extends CameraModifier {
     }
 
     /**
-     * TODO über comments bei abstracten Klassen nachdenken
+     * TODO Where to put the comments in abstract classes?
      * Scales the distance between the y = 0 constrained camera center and the camera's eye.
      * @param step - If undefined, the distance of initial and current position is used, else the step
      * value's sign is used for zoom direction (-1 for increase, +1 for decrease in distance).

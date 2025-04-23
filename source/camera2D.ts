@@ -49,8 +49,6 @@ export class Camera2D extends AbstractCamera {
         }
         this._scale = scale;
         this.invalidate(false, true);
-        //TODO review if constraints are required
-
     }
 
     get scale(): number {

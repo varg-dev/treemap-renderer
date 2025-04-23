@@ -410,7 +410,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
 
         this._innerLabelPass = new LabelRenderPass(context);
         this._innerLabelPass.initialize();
-        //TODO this is highly illegal
+        //TODO this should be fixed by implementing the 2D Camera on the webgl-operate side
         this._innerLabelPass.camera = this.camera as any as Camera;
         this._innerLabelPass.target = this._multiRenderTarget.defaultFBO;
 
@@ -425,7 +425,7 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
 
         this._leafLabelPass = new LabelRenderPass(context);
         this._leafLabelPass.initialize();
-        //TODO this is highly illegal
+        //TODO this should be fixed by implementing the 2D Camera on the webgl-operate side
         this._leafLabelPass.camera = this.camera as any as Camera;
         this._leafLabelPass.target = this._multiRenderTarget.defaultFBO;
 
