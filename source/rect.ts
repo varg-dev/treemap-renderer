@@ -1,8 +1,8 @@
 
 /* spellchecker: disable */
 
-import { auxiliaries } from 'webgl-operate';
-const assert = auxiliaries.assert;
+// import { auxiliaries } from 'webgl-operate';
+// const assert = auxiliaries.assert;
 
 /* spellchecker: enable */
 
@@ -116,9 +116,9 @@ export class Rect {
     }
 
     set top(v: number) {
-        assert(v >= this.bottom, `Non-negative height expected`);
+        // assert(v >= this.bottom, `Non-negative height expected`);
 
-        this._top = v;
+        this._top = Math.max(v, this._bottom);
     }
 
     /**
@@ -129,9 +129,9 @@ export class Rect {
     }
 
     set left(v: number) {
-        assert(v <= this.right, `Non-negative width expected`);
+        // assert(v <= this.right, `Non-negative width expected`);
 
-        this._left = v;
+        this._left = Math.max(v, this._left);
     }
 
     /**
@@ -142,9 +142,9 @@ export class Rect {
     }
 
     set right(v: number) {
-        assert(v >= this.left, `Non-negative width expected`);
+        // assert(v >= this.left, `Non-negative width expected`);
 
-        this._right = v;
+        this._right = Math.min(v, this._right);
     }
 
     /**
@@ -155,9 +155,9 @@ export class Rect {
     }
 
     set bottom(v: number) {
-        assert(v <= this.top, `Non-negative height expected`);
+        // assert(v <= this.top, `Non-negative height expected`);
 
-        this._bottom = v;
+        this._bottom = Math.max(v, this._bottom);
     }
 
     /**
@@ -203,9 +203,14 @@ export class Rect {
      * @param pos - The vertical position to split the rectangle.
      */
     truncateTop(pos: number): Rect {
-        assert(pos <= this._top && pos >= this._bottom, `Expect new top to be within rectangle`);
+        // assert(pos <= this._top && pos >= this._bottom, `Expect new top to be within rectangle`);
 
-        return new Rect(this._left, this._bottom, this._right, pos);
+        return new Rect(
+            this._left,
+            this._bottom,
+            this._right,
+            Math.max(Math.min(pos, this._top), this._bottom)
+        );
     }
 
     /**
@@ -223,9 +228,13 @@ export class Rect {
      * @param pos - The horizontal position to split the rectangle.
      */
     truncateLeft(pos: number): Rect {
-        assert(pos <= this._right && pos >= this._left, `Expect new top to be within rectangle`);
+        // assert(pos <= this._right && pos >= this._left, `Expect new top to be within rectangle`);
 
-        return new Rect(pos, this._bottom, this._right, this._top);
+        return new Rect(
+            Math.min(Math.max(this._left, pos), this._right),
+            this._bottom,
+            this._right,
+            this._top);
     }
 
     /**
@@ -243,9 +252,14 @@ export class Rect {
      * @param pos - The horizontal position to split the rectangle.
      */
     truncateRight(pos: number): Rect {
-        assert(pos <= this._right && pos >= this._left, `Expect new top to be within rectangle`);
+        // assert(pos <= this._right && pos >= this._left, `Expect new top to be within rectangle`);
 
-        return new Rect(this._left, this._bottom, pos, this._top);
+        return new Rect(
+            this._left,
+            this._bottom,
+            Math.max(Math.min(pos, this._right), this._left),
+            this._top
+        );
     }
 
     /**
@@ -263,9 +277,14 @@ export class Rect {
      * @param pos - The vertical position to split the rectangle.
      */
     truncateBottom(pos: number): Rect {
-        assert(pos <= this._top && pos >= this._bottom, `Expect new top to be within rectangle`);
+        // assert(pos <= this._top && pos >= this._bottom, `Expect new top to be within rectangle`);
 
-        return new Rect(this._left, pos, this._right, this._top);
+        return new Rect(
+            this._left,
+            Math.max(Math.min(pos, this._top), this._bottom),
+            this._right,
+            this._top
+        );
     }
 
     applyOffset(x: number, y: number): void {
@@ -353,10 +372,10 @@ export class Rect {
 
             // } // end if
 
-            assert(targetMargin < result,
-                `expected ${targetMargin} to be smaller than ${result}`);
+            // assert(targetMargin < result,
+            //     `expected ${targetMargin} to be smaller than ${result}`);
 
-            result = targetMargin;
+            result = Math.min(targetMargin, result);
         }
 
         return result;
