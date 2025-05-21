@@ -15,6 +15,7 @@ import {
 } from '../../source/treemap-renderer';
 
 import { CSVData } from './csvdata';
+import { CBDData } from './cbddata';
 
 import { Example } from '../example';
 
@@ -106,9 +107,15 @@ export class ImplicitInnerNodesTreemapFromCSVExample extends Example {
             const file = fileList[0];
             if (file === undefined) return;
 
-            file.text()
-                .then((content: string) => CSVData.loadAsync(content))
-                .then((config: Configuration) => loadConfig(config));
+            if (true) {
+                // Papaparse Interface
+                CSVData.loadAsync(file)
+                    .then((config: Configuration) => loadConfig(config));
+            } else {
+                // CBD-Parser Interface
+                CBDData.loadAsync(file)
+                    .then((config: Configuration) => loadConfig(config));
+            }
         };
 
         loadFile.onclick = async () => loadCsv();

@@ -93,7 +93,7 @@ export class Layout {
             });
 
             assert(rootWeight !== undefined && (weightSum === 0.0 || rootWeight > 0.0),
-                `Accumulated leaf weights as root weight expected`);
+                `Accumulated leaf weights as root weight expected. Expected ${weightSum}, got ${rootWeight}`);
         }
 
         const aspectRatio = configuration.aspectRatio!;
