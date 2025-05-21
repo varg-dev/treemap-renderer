@@ -107,7 +107,7 @@ export class ImplicitInnerNodesTreemapFromCSVExample extends Example {
             const file = fileList[0];
             if (file === undefined) return;
 
-            if (true) {
+            if (false) {
                 // Papaparse Interface
                 CSVData.loadAsync(file)
                     .then((config: Configuration) => loadConfig(config));
