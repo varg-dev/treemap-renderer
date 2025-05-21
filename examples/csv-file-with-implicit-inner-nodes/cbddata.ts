@@ -6,14 +6,15 @@ import * as gloperate from 'webgl-operate';
 import log = gloperate.auxiliaries.log;
 import LogLevel = gloperate.auxiliaries.LogLevel;
 
-import { parse } from 'papaparse';
+import { CSV, Column, NumberColumn, StringColumn } from '@hpicgs/cbd-parser';
 
 import { Configuration, Topology, NodeSort } from '../../source/treemap-renderer';
+import { delimiter } from 'path';
 
 /* spellchecker: enable */
 
 
-export class CSVHeader {
+export class CBDHeader {
     public csv_delimiter: string;
     public path_column: string;
     public weight_column: string;
@@ -28,75 +29,127 @@ class Edge {
     public index: number;
 };
 
+class CBDHeaderParser {
+    protected _header: CBDHeader;
+    protected _loader: CSV;
+    protected _headerParsed = false;
+    protected _intermediateChunk = '';
 
-export class CSVData {
-    protected static readonly FAILED = (url: string, request: XMLHttpRequest) =>
-        `fetching '${url}' failed (${request.status}): ${request.statusText}`;
-
-    protected static initializeHeader(header: CSVHeader): void {
-        header.csv_delimiter = ';';
-        header.path_column = 'name';
+    public constructor(header: CBDHeader, loader: CSV) {
+        this._header = header;
+        this._loader = loader;
     }
 
-    protected static parseHeader(lines: Array<string>, header: CSVHeader): void {
-        while (lines.length >= 1 && lines[0].startsWith('#')) {
-            const line = lines.shift()!.substring(1).trim();
+    // do nothing on start
+    public start(): void { }
+
+    // do nothing on end
+    public flush(): void { }
+
+    public transform: TransformerTransformCallback<string, string> = async (chunk, controller) => {
+
+        if (this._headerParsed) {
+            controller.enqueue(chunk);
+
+            return;
+        }
+
+        this._intermediateChunk += chunk;
+
+        // Contains newline => let's parse the header line
+        let lastNewline = -1;
+        let nextNewline = this._intermediateChunk.indexOf('\n', lastNewline + 1);
+        while (nextNewline != -1 && this._intermediateChunk[lastNewline + 1] == '#') {
+            const line = this._intermediateChunk.substring(lastNewline + 2, nextNewline).trim();
 
             const [key, value] = line.split('=').map((s: string) => s.trim());
 
             if (key == 'delimiter') {
-                header.csv_delimiter = value || ';';
+                this._header.csv_delimiter = value || ';';
+                this._loader._options!.delimiter = this._header.csv_delimiter;
             } else if (key == 'paths') {
-                header.path_column = value || 'name';
+                this._header.path_column = value || 'name';
             } else if (key == 'weights') {
-                header.weight_column = value || '';
+                this._header.weight_column = value || '';
             } else if (key == 'heights') {
-                header.height_column = value || '';
+                this._header.height_column = value || '';
             } else if (key == 'colors') {
-                header.color_column = value || '';
+                this._header.color_column = value || '';
             } else if (key == 'labels') {
-                header.label_column = value || '';
+                this._header.label_column = value || '';
             } else if (key == 'heightScale') {
-                header.height_scale = Number.parseFloat(value || '0.1') || 0.1;
+                this._header.height_scale = Number.parseFloat(value || '0.1') || 0.1;
             } else {
                 log(LogLevel.Warning, `Unparsed header`, key, '=', value);
             }
+
+            lastNewline = nextNewline;
+            nextNewline = this._intermediateChunk.indexOf('\n', lastNewline + 1);
         }
+
+        if (lastNewline > 0) {
+            this._intermediateChunk = this._intermediateChunk.substring(lastNewline + 1);
+        }
+
+        // Next line doesn't start with # => parsing headers finished
+        if (!this._intermediateChunk.startsWith('#')) {
+            controller.enqueue(this._intermediateChunk);
+
+            this._intermediateChunk = '';
+            this._headerParsed = true;
+        }
+    };
+}
+
+export class CBDData {
+    protected static initializeHeader(header: CBDHeader): void {
+        header.csv_delimiter = ';';
+        header.path_column = 'name';
     }
 
-    protected static parsePapaparseResult(result: any, header: CSVHeader, config: Configuration): void {
-        const collect_string_column = (result: any, name: string): Array<string> => {
-            if (result.meta.fields.indexOf(name) < 0) {
-                const column = new Array<string>(result.data.length);
+    protected static parseResult(result: Array<Column>, header: CBDHeader, config: Configuration): void {
+
+        const collect_string_column = (result: Array<Column>, name: string): Array<string> => {
+
+
+            let column_index = result.findIndex((column) => column.name == name);
+            if (column_index < 0) {
+                const column = new Array<string>(result[0].length);
                 return column;
             }
 
-            const column = (result.data as Array<string>).map((row: any) => {
-                return row[name] ? row[name] : "";
-            });
-
-            return column;
+            return result[column_index].chunks.map(chunk => chunk._data).flat();
         };
 
-        const collect_column = (result: any, name: string) => {
-            if (result.meta.fields.indexOf(name) < 0) {
-                const column = new Array(result.data.length);
+        const collect_column = (result: Array<Column>, name: string) => {
+            let column_index = result.findIndex((column) => column.name == name);
+            if (column_index < 0) {
+                const column = new Float32Array(result[0].length);
                 column.fill(-1);
                 return column;
             }
 
-            const column = result.data.map((row: any) => {
-                return row[name] ? parseFloat(row[name]) : -1.0;
-            });
+            const float32Flatten = (chunks) => {
+                const flattened = new Float32Array(result[0].length);
 
-            return column;
+                //insert each chunk into the new float32array
+                let currentFrame = 0
+                chunks.forEach((chunk) => {
+                    flattened.set(chunk, currentFrame)
+                    currentFrame += chunk.length;
+                });
+                return flattened;
+            }
+
+            return float32Flatten(result[column_index].chunks.map(chunk => chunk.view));
         };
 
-        const has_labels_column = (name: string) => result.meta.fields.indexOf(name) >= 0;
+        const has_labels_column = (name: string) => result.findIndex((column) => column.name == name && column.type == 'string') >= 0;
 
         // parse edges
 
         const paths = collect_string_column(result, header.path_column);
+
         for (let i = 0; i < paths.length; ++i) {
             paths[i] = paths[i].replace("./", "");
         }
@@ -142,9 +195,9 @@ export class CSVData {
         // Create root
         nodes['/'] = createNode(currentIndex, -1);
         currentIndex += 1;
-        weights.push(0);
-        heights.push(0);
-        colors.push(0);
+        weights.push(0.0);
+        heights.push(0.0);
+        colors.push(0.0);
 
         // Create inner nodes and leaf nodes
         pathParts.forEach((parts: Array<string>, partIndex: number) => {
@@ -170,14 +223,14 @@ export class CSVData {
 
                 if (index == parts.length - 1) {
                     // Is leaf node
-                    weights.push(leafWeights[partIndex]);
-                    heights.push(leafHeights[partIndex]);
-                    colors.push(leafColors[partIndex]);
+                    weights.push(leafWeights[partIndex] || 0.0);
+                    heights.push(leafHeights[partIndex] || 0.0);
+                    colors.push(leafColors[partIndex] || 0.0);
                 } else {
                     // Is inner node
-                    weights.push(0);
-                    heights.push(0);
-                    colors.push(0);
+                    weights.push(0.0);
+                    heights.push(0.0);
+                    colors.push(0.0);
                 }
             });
         });
@@ -284,39 +337,54 @@ export class CSVData {
     }
 
     static loadAsync(file: File): Promise<Configuration> {
-        const data = file.text;
+        const header = new CBDHeader();
 
-        const header = new CSVHeader();
+        const loader = new CSV({ delimiter: ';' });
 
-        CSVData.initializeHeader(header);
+        CBDData.initializeHeader(header);
 
-        const lines = data.split('\n');
+        const payload = file.stream()
+            .pipeThrough(new TextDecoderStream())
+            .pipeThrough(new TransformStream(new CBDHeaderParser(header, loader)))
+            .pipeThrough(new TextEncoderStream());
 
-        CSVData.parseHeader(lines, header);
+        loader.addDataSource('file', payload);
 
-        const payload = lines.join('\n');
-
-        return this.loadAsyncHeader(payload, header);
-    }
-
-    static loadAsyncHeader(data: string, header: CSVHeader): Promise<Configuration> {
-        return new Promise<Configuration>((resolve, reject) => {
+        return new Promise<Configuration>(async (resolve, reject) => {
             const config = new Configuration();
 
-            parse(data, {
-                error: (error: any) => reject(error),
-                complete: (result) => {
-                    CSVData.parsePapaparseResult(result, header, config);
+            const start = Date.now();
+            console.log('Start parsing:', start);
 
-                    resolve(config);
-                },
-                delimiter: header.csv_delimiter,
-                quoteChar: '"',
-                escapeChar: '"',
-                header: true,
-                comments: '#',
-                skipEmptyLines: true
+            const detectedColumns = await loader.open('file');
+
+            const { columns, statistics } = await loader.load({
+                columns: detectedColumns,
+                /*
+                onInit: () => {
+                    console.log('received columns', detectedColumns);
+                    console.log(`detected ${detectedColumns!.length} columns:\n` +
+                        detectedColumns!.map(({ name, type }) => `${name}: ${type}`).join('\n')
+                    );
+                },*/
+                /*
+                onUpdate: (progress) => console.log(`received new data. progress: ${progress}`),
+                */
             });
+
+            const parsed_csv = Date.now();
+            console.log('End CSV parsing:', parsed_csv, parsed_csv - start);
+
+            console.log(columns);
+
+            CBDData.parseResult(columns, header, config);
+
+            const parsed_config = Date.now();
+            console.log('End Config parsing:', parsed_config, parsed_config - parsed_csv);
+
+            console.log('Full runtime:', parsed_config - start);
+
+            resolve(config);
         });
     }
 
