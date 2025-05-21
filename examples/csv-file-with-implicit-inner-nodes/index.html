@@ -32,37 +32,20 @@
             font-family: "Roboto Mono" !important;
         }
     </style>
-  <script type="module" crossorigin src="/treemap-renderer/assets/explicit-CGsHuMjF.js"></script>
+  <script type="module" crossorigin src="/treemap-renderer/assets/file-IjSXHd2f.js"></script>
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/index-DRUcNu7V.js">
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/example-CAmKpJUL.js">
   <link rel="modulepreload" crossorigin href="/treemap-renderer/assets/papaparse.min-D1KxGBLm.js">
 </head>
 
 <body>
+
     <section class="container mt-5"><div class="row justify-content-center"><div class="col-12 col-lg-8"><h1>@varg-dev/<strong>Treemap Renderer</strong></h1><p class="lead">Test Page for Development</p><p>// about:version <code id="version">version</code>,
 branch <code id="branch">branch</code>,
 commit <code id="commit">commit</code>.</p><p class="mt-4">WebGL <span class="font-weight-bold">About Page</span>: <a href="https://webgl-operate.org/about.html">webgl-operate.org/about.html</a>
 &emsp;|&emsp;WebGL <span class="font-weight-bold">Operate</span>: <a href="https://webgl-operate.org">webgl-operate.org</a></p></div></div></section><section class="container mt-5"><div class="row"><div class="col-12"><h1><span class="font-weight-bold"><a href="/treemap-renderer/index.html">Treemaps</a></span>
-&#x2014; Explicit Inner Nodes Treemap</h1><button class="pull-end btn btn-primary" type="button" id="reload">Reload Page</button><button class="pull-end btn btn-primary" type="button" id="fullscreen">Fullscreen</button></div></div></section><section class="container mt-5"><div class="row"><div class="col"><canvas class="embed-responsive-item w-100" id="canvas"></canvas></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">CSV Content:</p><textarea class="form-control" id="csv-data" rows="25"># delimiter=;
-# ids=id
-# parents=parent
-# weights=a
-# heights=b
-# colors=c
-# labels=name
-id;parent;name;a;b;c
-1;0;a
-2;0;b
-3;0;c
-4;0;d
-5;1;e;0.125;0.1;0.0
-6;1;f;0.25;0.1;0.1
-7;2;g;0.125;0.3;0.1
-8;2;h;0.125;0.2;0.6
-9;3;i;0.5;0.1;0.7
-10;3;j;0.125;0.1;1.0
-11;4;k;0.5;0.1;0.0
-12;4;l;0.5;0.2;0.0</textarea></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Prepared Config:</p><pre class="alert alert-secondary"><code id="config-display" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1 mt-1">Direct Link:</p><pre class="alert alert-secondary"><code id="data-hash" style="user-select: all;"></code></pre></div></div></section><section class="container mt-5"><div class="row"><div class="col"><p class="mb-1">WebGL/webgl-operate Information:<pre class="alert alert-secondary"><code id="context-about"> </code></pre></p></div></div></section><footer><div class="row text-center"><div class="col-12"><p class="mt-5 mb-4">&copy; 2022&thinsp;&ndash;&thinsp;<span id="cryear"></span></p></div></div></footer>
+&#x2014; Implicit Inner Nodes Treemap</h1></div><div class="col-4"><input class="col-3 form-control" type="file" accept=".csv" id="fileUpload"/></div><div class="col-2"><button class="btn btn-primary" type="button" id="loadFile">Load CSV</button></div><div class="col-2"><button class="pull-end btn btn-primary" type="button" id="fullscreen">Fullscreen</button></div></div></section><section class="container mt-5"><div class="row"><div class="col"><canvas class="embed-responsive-item w-100" id="canvas"></canvas></div></div></section><footer><div class="row text-center"><div class="col-12"><p class="mt-5 mb-4">&copy; 2022&thinsp;&ndash;&thinsp;<span id="cryear"></span></p></div></div></footer>
+
 
 
 </body>
