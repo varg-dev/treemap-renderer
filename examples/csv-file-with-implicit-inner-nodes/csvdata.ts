@@ -283,8 +283,8 @@ export class CSVData {
         config.altered.alter('any');
     }
 
-    static loadAsync(file: File): Promise<Configuration> {
-        const data = file.text;
+    static async loadAsync(file: File): Promise<Configuration> {
+        const data = await file.text();
 
         const header = new CSVHeader();
 
