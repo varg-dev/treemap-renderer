@@ -67,7 +67,7 @@ export class DirectConfigTreemapExample extends Example {
         const canvas = this._canvas as gloperate.Canvas;
         const visualization = this._visualization;
 
-        const fullscreenTarget = window.document.getElementById('fullscreen-target') || canvas.element;
+        const fullscreenTarget = canvas.element;
 
         window.document.getElementById('fullscreen')!.onclick = () => {
             gloperate.viewer.Fullscreen.toggle(fullscreenTarget);
