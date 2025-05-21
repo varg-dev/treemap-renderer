@@ -81,3 +81,15 @@ block content
                       | This treemap is defined using its JSON configuration API.
                     a.btn.btn-primary(href=base+"examples/direct-config/")
                       | Try Out
+
+        .col-lg-4.col-sm-6.col-xs-12.mb-4
+            .card
+                img.card-img-top(src="examples/csv-with-implicit-inner-nodes/thumbnail.png")
+                .card-body
+                    h3.card-title
+                      | CSV File to Implicit Inner Nodes Treemap
+                    p.card-text
+                      | This treemap is defined using a CSV file, where the inner nodes are implicitly declared as part of a leaf nodes' path.
+                      | Here, this path is slash-separated, similar to UNIX filenames.
+                    a.btn.btn-primary(href=base+"examples/csv-file-with-implicit-inner-nodes/")
+                      | Try Out

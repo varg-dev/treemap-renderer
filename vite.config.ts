@@ -75,6 +75,7 @@ export default defineConfig(({ mode }) => {
                 rollupOptions: {
                     input: {
                         main: resolve(__dirname, 'index.html'),
+                        file: resolve(__dirname, 'examples/csv-file-with-implicit-inner-nodes/index.html'),
                         explicit: resolve(__dirname, 'examples/csv-with-explicit-inner-nodes/index.html'),
                         nominal: resolve(__dirname, 'examples/nominal-data-csv-with-explicit-inner-nodes/index.html'),
                         grouping: resolve(__dirname, 'examples/csv-with-grouping/index.html'),

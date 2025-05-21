@@ -1,0 +1,32 @@
+
+extends ../partials/template.pug
+
+include ../partials/code.pug
+
+block content
+
+  section.container.mt-5
+    .row
+      .col-12
+        h1
+          | #[span.font-weight-bold #[a(href=base+'index.html') Treemaps]]
+          | &#x2014; Implicit Inner Nodes Treemap
+
+      .col-4
+        input.col-3.form-control(type="file" accept=".csv")#fileUpload
+
+      .col-2
+        button.btn.btn-primary(type="button")#loadFile
+          | Load CSV
+
+      .col-2
+        button.pull-end.btn.btn-primary(type="button")#fullscreen
+          | Fullscreen
+
+
+  section.container.mt-5
+    div.row
+      div.col
+        block canvas
+
+          canvas(id = `canvas`).embed-responsive-item.w-100
