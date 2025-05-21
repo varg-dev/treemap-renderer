@@ -301,10 +301,21 @@ export class CSVData {
         return new Promise<Configuration>((resolve, reject) => {
             const config = new Configuration();
 
+            const start = Date.now();
+            console.log('Start parsing:', start);
+
             parse(data, {
                 error: (error: any) => reject(error),
                 complete: (result) => {
+                    const parsed_csv = Date.now();
+                    console.log('End CSV parsing:', parsed_csv, parsed_csv - start);
+
                     CSVData.parsePapaparseResult(result, header, config);
+
+                    const parsed_config = Date.now();
+                    console.log('End Config parsing:', parsed_config, parsed_config - parsed_csv);
+
+                    console.log('Full runtime:', parsed_config - start);
 
                     resolve(config);
                 },
