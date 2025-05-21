@@ -6,7 +6,7 @@ import * as gloperate from 'webgl-operate';
 import log = gloperate.auxiliaries.log;
 import LogLevel = gloperate.auxiliaries.LogLevel;
 
-import { CSV, Column, NumberColumn, StringColumn } from '@hpicgs/cbd-parser';
+import { CSV, Column, Float32Column, Float32Chunk, StringColumn, StringChunk } from '@hpicgs/cbd-parser';
 
 import { Configuration, Topology, NodeSort } from '../../source/treemap-renderer';
 import { delimiter } from 'path';
@@ -110,26 +110,27 @@ export class CBDData {
     protected static parseResult(result: Array<Column>, header: CBDHeader, config: Configuration): void {
 
         const collect_string_column = (result: Array<Column>, name: string): Array<string> => {
-
-
             let column_index = result.findIndex((column) => column.name == name);
             if (column_index < 0) {
-                const column = new Array<string>(result[0].length);
+                const column = new StringColumn(name);
+                column.push(new StringChunk(result[0].length, 0, false));
                 return column;
             }
 
-            return result[column_index].chunks.map(chunk => chunk._data).flat();
+            // Return column as is
+            return result[column_index];
         };
 
         const collect_column = (result: Array<Column>, name: string) => {
             let column_index = result.findIndex((column) => column.name == name);
             if (column_index < 0) {
-                const column = new Float32Array(result[0].length);
-                column.fill(-1);
+                const column = new Float32Column(name);
+                column.push(new Float32Chunk(result[0].length, 0, false))
+                column.getChunk(0).view.fill(-1);
                 return column;
             }
 
-            const float32Flatten = (chunks) => {
+            /*const float32Flatten = (chunks) => {
                 const flattened = new Float32Array(result[0].length);
 
                 //insert each chunk into the new float32array
@@ -139,16 +140,19 @@ export class CBDData {
                     currentFrame += chunk.length;
                 });
                 return flattened;
-            }
+            }*/
 
-            return float32Flatten(result[column_index].chunks.map(chunk => chunk.view));
+            //return float32Flatten(result[column_index].chunks.map(chunk => chunk.view));
+
+            // Return column as is
+            return result[column_index];
         };
 
         const has_labels_column = (name: string) => result.findIndex((column) => column.name == name && column.type == 'string') >= 0;
 
         // parse edges
 
-        const paths = collect_string_column(result, header.path_column);
+        const paths = collect_string_column(result, header.path_column).chunks.map(chunk => chunk._data).flat();
 
         for (let i = 0; i < paths.length; ++i) {
             paths[i] = paths[i].replace("./", "");
@@ -223,9 +227,9 @@ export class CBDData {
 
                 if (index == parts.length - 1) {
                     // Is leaf node
-                    weights.push(leafWeights[partIndex] || 0.0);
-                    heights.push(leafHeights[partIndex] || 0.0);
-                    colors.push(leafColors[partIndex] || 0.0);
+                    weights.push(leafWeights.get(partIndex) || 0.0);
+                    heights.push(leafHeights.get(partIndex) || 0.0);
+                    colors.push(leafColors.get(partIndex) || 0.0);
                 } else {
                     // Is inner node
                     weights.push(0.0);
@@ -374,8 +378,6 @@ export class CBDData {
 
             const parsed_csv = Date.now();
             console.log('End CSV parsing:', parsed_csv, parsed_csv - start);
-
-            console.log(columns);
 
             CBDData.parseResult(columns, header, config);
 
