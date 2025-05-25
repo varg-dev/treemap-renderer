@@ -13,7 +13,6 @@ import { delimiter } from 'path';
 
 /* spellchecker: enable */
 
-
 export class CBDHeader {
     public csv_delimiter: string;
     public path_column: string;
@@ -22,6 +21,7 @@ export class CBDHeader {
     public color_column: string;
     public label_column: string;
     public height_scale: number;
+    public color_scheme: string;
 };
 
 class Edge {
@@ -79,6 +79,8 @@ class CBDHeaderParser {
                 this._header.label_column = value || '';
             } else if (key == 'heightScale') {
                 this._header.height_scale = Number.parseFloat(value || '0.1') || 0.1;
+            } else if (key == 'colorScheme') {
+                this._header.color_scheme = value || 'Greens';
             } else {
                 log(LogLevel.Warning, `Unparsed header`, key, '=', value);
             }
@@ -288,7 +290,8 @@ export class CBDData {
                 source: 'buffer:source-colors',
                 transformations: [
                     { type: 'fill-invalid', value: 0.0, invalidValue: -1.0 },
-                    { type: 'normalize', operation: 'zero-to-max' }
+                    { type: 'normalize', operation: 'zero-to-max' },
+                    { type: 'callback', iteration: 'leaves', operation: (value: number) => Math.pow(value, 0.25) }
                 ],
             }
         ];
@@ -297,7 +300,7 @@ export class CBDData {
             { identifier: 'emphasis', colorspace: 'hex', value: '#00b0ff' },
             { identifier: 'auxiliary', colorspace: 'hex', values: ['#00aa5e', '#71237c'] },
             { identifier: 'inner', colorspace: 'hex', values: ['#e8eaee', '#eef0f4'] },
-            { identifier: 'leaf', preset: 'Greens', steps: 7 },
+            { identifier: 'leaf', preset: header.color_scheme, steps: 7 },
         ];
 
         config.layout = {

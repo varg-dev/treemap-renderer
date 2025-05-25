@@ -159,9 +159,10 @@
                                     "additionalProperties": false
                                 },
                                 { "type": "object", "properties": {
-                                        "type": { "type": "string", "enum": [ "callback" ]}
+                                        "type": { "type": "string", "enum": [ "callback" ]},
+                                        "iteration": { "type": "string", "enum": [ "top-down", "bottom-up", "depth-first", "leaves" ] }
                                     },
-                                    "required": [ "type", "operation" ],
+                                    "required": [ "type", "iteration", "operation" ],
                                     "additionalProperties": true
                                 }
                             ]

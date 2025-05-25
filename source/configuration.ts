@@ -345,6 +345,7 @@ export namespace Configuration {
     export interface Transformation {
         type: string;
         operation?: string | TransformationCallback;
+        iteration?: string;
         value?: number;
         buffer?: BufferIdentifier;
         invalidValue?: number;

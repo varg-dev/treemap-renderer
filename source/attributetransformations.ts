@@ -735,6 +735,11 @@ export namespace AttributeTransformations {
                     target[node.index] = callback(target[node.index], node, target, tree);
                 });
                 break;
+            case Topology.IterationDirection.Leaves:
+                tree.forEachLeafNode((node: Node) => {
+                    target[node.index] = callback(target[node.index], node, target, tree);
+                });
+                break;
             case Topology.IterationDirection.BottomUp:
             default:
                 tree.depthFirstDo((node: Node) => {

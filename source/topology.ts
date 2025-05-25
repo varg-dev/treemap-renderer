@@ -585,6 +585,7 @@ export namespace Topology {
         TopDown = 'top-down',
         BottomUp = 'bottom-up',
         DepthFirst = 'depth-first',
+        Leaves = 'leaves',
     }
 
 }
