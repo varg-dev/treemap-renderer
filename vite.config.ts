@@ -3,7 +3,6 @@ import { resolve } from 'path';
 import git from 'git-rev-sync';
 
 import { defineConfig, UserConfigExport } from 'vite';
-// import { visualizer } from 'rollup-plugin-visualizer';
 
 import pugPlugin from 'vite-plugin-pug';
 import glsl from 'vite-plugin-glsl';
@@ -109,7 +108,7 @@ export default defineConfig(({ mode }) => {
 
     }
 
-    config.plugins = [pugPlugin(pug_options, pug_locals), glsl()]; // visualizer()
+    config.plugins = [pugPlugin(pug_options, pug_locals), glsl()];
 
     return config;
 });
