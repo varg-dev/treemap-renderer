@@ -4,7 +4,6 @@
 import { auxiliaries, tuples } from 'webgl-operate';
 
 import {
-    Camera,
     ChangeLookup,
     Context,
     Framebuffer,
@@ -12,6 +11,8 @@ import {
     Program,
     Shader,
 } from 'webgl-operate';
+
+import { AbstractCamera } from './abstractcamera';
 
 import { CuboidRenderPass } from './cuboidrenderpass';
 import { MultiRenderTarget } from './multirendertarget';
@@ -53,7 +54,7 @@ export class QuadRenderPass extends Initializable {
     protected _target: Framebuffer;
 
     /** @see {@link camera} */
-    protected _camera: Camera;
+    protected _camera: AbstractCamera;
 
     /** @see {@link ndcOffset} */
     protected _ndcOffset: tuples.GLfloat2;
@@ -298,7 +299,7 @@ export class QuadRenderPass extends Initializable {
         this._ndcOffset = offset;
     }
 
-    set camera(camera: Camera) {
+    set camera(camera: AbstractCamera) {
         this.assertInitialized();
         if (this._camera === camera) {
             return;
