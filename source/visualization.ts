@@ -41,12 +41,21 @@ const ColorPresets = [
 
 /* spellchecker: enable */
 
+export enum VisualizationType {
+    VISUALIZATION_2D,
+    VISUALIZATION_3D
+}
 
 /**
  * @todo DL - cleanup this messy class - it comprises the most essential controlling and is barley
  * readable and hard to maintain in its current state. Review and refactor this asap!
  */
 export class Visualization {
+
+    /**
+     *  Parameter used to create either a 2D or 3D visualization
+     */
+    private _visualizationType : VisualizationType;
 
     /**
      * Cached variables for lazy update of geometry - @todo DL - review this.
@@ -80,7 +89,10 @@ export class Visualization {
     /** @todo - refine this later */
     protected _colorLUT: ColorTable;
 
-    constructor() {
+    constructor(visualizationType: VisualizationType = VisualizationType.VISUALIZATION_3D) {
+        this._visualizationType = visualizationType;
+
+        //TODO use visualizationType to modify renderer
         this._renderer = new Renderer(this);
 
         this._renderer.geometry = this._geometry;
@@ -658,6 +670,10 @@ export class Visualization {
     /** @todo comment! */
     get renderer(): AbstractRenderer {
         return this._renderer;
+    }
+
+    get visualizationType(): VisualizationType {
+        return this._visualizationType;
     }
 
     /** @todo comment! */
