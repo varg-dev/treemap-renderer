@@ -14,6 +14,7 @@ import TREEMAP_SCHEMA_JSON from './data/treemap.schema.json';
 import BUFFER_REFERENCE_SCHEMA_JSON from './data/bufferreference.schema.json';
 import COLOR_REFERENCE_SCHEMA_JSON from './data/colorreference.schema.json';
 import COLOR_SCHEMA_SCHEMA_JSON from './data/colorscheme.schema.json';
+import { Linearization } from './linearization';
 
 /* spellchecker: enable */
 
@@ -253,6 +254,34 @@ export class Configuration {
         return this._labels;
     }
 
+    public bufferDataToJSON(data: string | Configuration.AttributeBuffer) {
+        if (typeof data === "string" || data instanceof String) {
+            return data;
+        }
+
+        if (Array.isArray(data)) {
+            return data;
+        }
+
+        return Array.from(data);
+    }
+
+    public buffersToJSON(): object {
+        const buffers = [];
+
+        for (const b of this.buffers) {
+            buffers.push({
+                identifier: b.identifier,
+                type: b.type,
+                encoding: b.encoding,
+                linearization: b.linearization,
+                data: this.bufferDataToJSON(b.data)
+            });
+        }
+
+        return buffers;
+    }
+
     public labelsToJSON(): object {
         const labels = Object.assign({}, this._labels);
 
@@ -271,7 +300,7 @@ export class Configuration {
     public toJSON(): object {
         return {
             'topology': this.topology,
-            'buffers': this.buffers,
+            'buffers': this.buffersToJSON(),
             'bufferViews': this.bufferViews,
             'colors': this.colors,
             'layout': this.layout,
