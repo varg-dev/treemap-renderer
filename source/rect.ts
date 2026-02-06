@@ -556,4 +556,16 @@ export namespace Rect {
      */
     export enum Orientation { CD, AC, BA, DB, DC, CA, AB, BD }
 
+    // Rotation in CCW direction
+    export enum Rotation {
+        R000,
+        R090,
+        R180,
+        R270
+    }
+
+    export enum CurveOrientation {
+        CW,
+        CCW
+    }
 }

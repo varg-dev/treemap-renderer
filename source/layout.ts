@@ -11,6 +11,7 @@ import { Topology } from './topology';
 import { CodeCityLayout } from './codecitylayout';
 import { Configuration } from './configuration';
 import { SnakeLayout } from './snakelayout';
+import { HilbertLayout, MooreLayout } from './hilbertmoorelayout';
 import { StripLayout } from './striplayout';
 
 /* spellchecker: enable */
@@ -107,6 +108,16 @@ export class Layout {
                 break;
             case Layout.LayoutAlgorithm.Snake:
                 SnakeLayout.compute(tree, weights, aspectRatio, layout,
+                    Layout.splittingLayoutPostprocessing(configuration), accessorySpaces, labelRects,
+                    labelPaddingSpaces);
+                break;
+            case Layout.LayoutAlgorithm.Hilbert:
+                HilbertLayout.compute(tree, weights, aspectRatio, layout,
+                    Layout.splittingLayoutPostprocessing(configuration), accessorySpaces, labelRects,
+                    labelPaddingSpaces);
+                break;
+            case Layout.LayoutAlgorithm.Moore:
+                MooreLayout.compute(tree, weights, aspectRatio, layout,
                     Layout.splittingLayoutPostprocessing(configuration), accessorySpaces, labelRects,
                     labelPaddingSpaces);
                 break;
@@ -592,6 +603,8 @@ export namespace Layout {
     export enum LayoutAlgorithm {
         Strip = 'strip',
         Snake = 'snake',
+        Hilbert = 'hilbert',
+        Moore = 'moore',
         CodeCity = 'codecity',
     }
 
