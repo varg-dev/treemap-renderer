@@ -615,31 +615,76 @@ function sumRangeFromPrefix(prefixSums: number[], first: number, last: number): 
     return prefixSums[last] - prefixSums[first];
 }
 
+function upperBound(values: number[], value: number, begin: number, end: number): number {
+    let low = begin;
+    let high = end;
+
+    while (low < high) {
+        const mid = low + Math.floor((high - low) * 0.5);
+        if (values[mid] <= value) {
+            low = mid + 1;
+        } else {
+            high = mid;
+        }
+    }
+
+    return low;
+}
+
 function partitionGreedy(
     range: { first: number; last: number },
-    _weights: Configuration.AttributeBuffer
+    weights: Configuration.AttributeBuffer
 ): { first: number; last: number }[] {
     const size = range.last - range.first;
-    const parts = Math.min(4, size);
 
-    if (parts <= 1) {
+    if (size <= 1) {
         return [range];
     }
 
-    const groups: { first: number; last: number }[] = [];
-    let cursor = range.first;
-
-    for (let part = 0; part < parts; part++) {
-        const remainingParts = parts - part;
-        const remainingItems = range.last - cursor;
-        const take = Math.max(1, Math.ceil(remainingItems / remainingParts));
-
-        const next = Math.min(cursor + take, range.last - (remainingParts - 1));
-        groups.push({ first: cursor, last: next });
-        cursor = next;
+    if (size <= 4) {
+        const groups: { first: number; last: number }[] = [];
+        for (let i = range.first; i < range.last; ++i) {
+            groups.push({ first: i, last: i + 1 });
+        }
+        return groups;
     }
 
-    return groups;
+    let total = 0.0;
+    for (let i = range.first; i < range.last; ++i) {
+        total += weights[i];
+    }
+    const optimal = total / 4.0;
+
+    let last = 0;
+    let sum = weights[range.first + 0];
+    const cuts: { first: number; last: number }[] = [];
+
+    for (let current = 1; current < size && cuts.length < 3; ++current) {
+        if (size - current === 4 - cuts.length - 1) {
+            cuts.push({
+                first: range.first + last,
+                last: range.first + current,
+            });
+            last = current;
+            continue;
+        }
+
+        const weight = weights[range.first + current];
+        if (Math.abs(sum - optimal) > Math.abs(sum + weight - optimal)) {
+            sum += weight;
+        } else {
+            sum = weight;
+            cuts.push({
+                first: range.first + last,
+                last: range.first + current,
+            });
+            last = current;
+        }
+    }
+
+    cuts.push({ first: range.first + last, last: range.last });
+
+    return cuts;
 }
 
 function partitionMinMax(
@@ -648,37 +693,77 @@ function partitionMinMax(
     prefixSums: number[]
 ): { first: number; last: number }[] {
     const size = range.last - range.first;
-    const parts = Math.min(4, size);
 
-    if (parts <= 1) {
+    if (size <= 1) {
         return [range];
     }
 
-    const total = sumRangeFromPrefix(prefixSums, range.first, range.last);
-    const target = total / parts;
+    if (size <= 4) {
+        const groups: { first: number; last: number }[] = [];
+        for (let i = range.first; i < range.last; ++i) {
+            groups.push({ first: i, last: i + 1 });
+        }
+        return groups;
+    }
 
-    const groups: { first: number; last: number }[] = [];
-    let start = range.first;
-    let running = 0;
+    const numberOfCuts = 4;
+    const threshold = 1.0;
 
-    for (let i = range.first; i < range.last; i++) {
-        running += weights[i];
-        const remainingItems = range.last - (i + 1);
-        const remainingGroups = parts - groups.length - 1;
+    const localPrefix = new Array<number>(size);
+    let runningSum = 0.0;
+    for (let i = 0; i < size; ++i) {
+        runningSum += weights[range.first + i];
+        localPrefix[i] = runningSum;
+    }
 
-        const shouldSplit =
-            groups.length < parts - 1 &&
-            (running >= target || remainingItems === remainingGroups);
+    const total = localPrefix[localPrefix.length - 1];
+    let cuts: { first: number; last: number }[] = [];
 
-        if (shouldSplit) {
-            groups.push({ first: start, last: i + 1 });
-            start = i + 1;
-            running = 0;
+    const evalCuts = (partLimit: number): boolean => {
+        cuts = [];
+        let currentBegin = 0;
+
+        for (let i = 0; i < numberOfCuts && currentBegin < localPrefix.length; ++i) {
+            const base = currentBegin > 0 ? localPrefix[currentBegin - 1] : 0.0;
+            let currentEnd = upperBound(
+                localPrefix, partLimit + base, currentBegin, localPrefix.length);
+
+            // Avoid empty partitions when a single weight exceeds partLimit.
+            if (currentEnd <= currentBegin) {
+                currentEnd = currentBegin + 1;
+            }
+
+            cuts.push({
+                first: range.first + currentBegin,
+                last: range.first + currentEnd,
+            });
+            currentBegin = currentEnd;
+        }
+
+        return currentBegin === localPrefix.length;
+    };
+
+    let low = total / numberOfCuts - threshold;
+    let high = total;
+    let bestCuts: { first: number; last: number }[] = [];
+
+    if (!evalCuts(high)) {
+        return partitionGreedy(range, weights);
+    }
+    bestCuts = cuts.map((cut) => ({ ...cut }));
+
+    while (high - low > threshold) {
+        const mid = (high + low) * 0.5;
+
+        if (evalCuts(mid)) {
+            high = mid;
+            bestCuts = cuts.map((cut) => ({ ...cut }));
+        } else {
+            low = mid;
         }
     }
 
-    groups.push({ first: start, last: range.last });
-    return groups;
+    return bestCuts;
 }
 
 function partitionVariance(
@@ -686,8 +771,71 @@ function partitionVariance(
     weights: Configuration.AttributeBuffer,
     prefixSums: number[]
 ): { first: number; last: number }[] {
-    // Balanced contiguous partitioning is used as a robust fallback.
-    return partitionMinMax(range, weights, prefixSums);
+    const size = range.last - range.first;
+    if (size <= 1) {
+        return [range];
+    }
+
+    if (size <= 4) {
+        const groups: { first: number; last: number }[] = [];
+        for (let i = range.first; i < range.last; ++i) {
+            groups.push({ first: i, last: i + 1 });
+        }
+        return groups;
+    }
+
+    const n = size;
+    const prefix = new Array<number>(n + 1);
+    prefix[0] = 0.0;
+    for (let i = 0; i < n; ++i) {
+        prefix[i + 1] = prefix[i] + weights[range.first + i];
+    }
+
+    const mean = prefix[n] / 4.0;
+    const diff = (begin: number, cut: number, end: number): number => {
+        return Math.abs(prefix[cut] - (prefix[end] + prefix[begin]) * 0.5);
+    };
+
+    let best = Number.POSITIVE_INFINITY;
+    let cuts: { first: number; last: number }[] = [range];
+
+    for (let left = 1, middle = 2, right = 3; middle < n - 1; ++middle) {
+        if (left >= middle) {
+            left = middle - 1;
+        }
+        while (left + 1 < middle && diff(0, left + 1, middle) < diff(0, left, middle)) {
+            left += 1;
+        }
+
+        if (right <= middle) {
+            right = middle + 1;
+        }
+        while (right + 1 < n && diff(middle, right + 1, n) < diff(middle, right, n)) {
+            right += 1;
+        }
+
+        if (!(0 < left && left < middle && middle < right && right < n)) {
+            continue;
+        }
+
+        const s0 = prefix[left] - prefix[0] - mean;
+        const s1 = prefix[middle] - prefix[left] - mean;
+        const s2 = prefix[right] - prefix[middle] - mean;
+        const s3 = prefix[n] - prefix[right] - mean;
+        const current = s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3;
+
+        if (current < best) {
+            best = current;
+            cuts = [
+                { first: range.first, last: range.first + left },
+                { first: range.first + left, last: range.first + middle },
+                { first: range.first + middle, last: range.first + right },
+                { first: range.first + right, last: range.last },
+            ];
+        }
+    }
+
+    return cuts.length === 4 ? cuts : partitionMinMax(range, weights, prefixSums);
 }
 
 
