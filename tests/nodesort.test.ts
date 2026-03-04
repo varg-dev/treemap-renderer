@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { Configuration } from '../source/configuration';
 import { NodeSort } from '../source/nodesort';
 import { Topology } from '../source/topology';
 import { collectChildren } from './helpers';
@@ -13,14 +14,17 @@ describe('NodeSort', () => {
             [0, 30, 0, 10, 0, 20]
         );
 
-        const ok = NodeSort.sortNodes(tree, [], undefined, {
-            layout: {
-                sort: {
-                    algorithm: NodeSort.Algorithm.Ascending,
-                    key: NodeSort.Key.Identity,
-                },
+        const configuration = new Configuration();
+        configuration.layout = {
+            algorithm: 'strip',
+            weight: 'buffer:weights',
+            sort: {
+                algorithm: NodeSort.Algorithm.Ascending,
+                key: NodeSort.Key.Identity,
             },
-        } as any);
+        };
+
+        const ok = NodeSort.sortNodes(tree, [], undefined, configuration);
 
         expect(ok).toBe(true);
         const ids = collectChildren(tree, tree.root).map((n) => n.id);

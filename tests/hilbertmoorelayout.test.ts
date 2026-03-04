@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import { HilbertLayout, MooreLayout } from '../source/hilbertmoorelayout';
 import { Rect } from '../source/rect';
-import { createStarTopology, noOpLayoutCallbacks } from './helpers';
+import { createLayoutScratch, createStarTopology, noOpLayoutCallbacks } from './helpers';
 
 describe('HilbertLayout/MooreLayout', () => {
     it('computes hilbert layout for one level', () => {
         const tree = createStarTopology(4);
         const weights = new Float32Array([4, 1, 1, 1, 1]);
         const result = new Array<Rect>(tree.numberOfNodes);
+        const scratch = createLayoutScratch(tree);
 
         HilbertLayout.compute(
             tree,
@@ -16,9 +17,9 @@ describe('HilbertLayout/MooreLayout', () => {
             1.0,
             result,
             noOpLayoutCallbacks,
-            new Array(tree.numberOfNodes),
-            new Array(tree.numberOfNodes),
-            new Array(tree.numberOfNodes)
+            scratch.accessorySpace,
+            scratch.labelRects,
+            scratch.labelPaddingSpaces
         );
 
         expect(result[1].area).toBeGreaterThan(0);
@@ -28,6 +29,7 @@ describe('HilbertLayout/MooreLayout', () => {
         const tree = createStarTopology(4);
         const weights = new Float32Array([4, 1, 1, 1, 1]);
         const result = new Array<Rect>(tree.numberOfNodes);
+        const scratch = createLayoutScratch(tree);
 
         MooreLayout.compute(
             tree,
@@ -35,9 +37,9 @@ describe('HilbertLayout/MooreLayout', () => {
             1.0,
             result,
             noOpLayoutCallbacks,
-            new Array(tree.numberOfNodes),
-            new Array(tree.numberOfNodes),
-            new Array(tree.numberOfNodes)
+            scratch.accessorySpace,
+            scratch.labelRects,
+            scratch.labelPaddingSpaces
         );
 
         expect(result[1].area).toBeGreaterThan(0);

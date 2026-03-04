@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import { Rect } from '../source/rect';
 import { StripLayout } from '../source/striplayout';
-import { createStarTopology, noOpLayoutCallbacks } from './helpers';
+import { createLayoutScratch, createStarTopology, noOpLayoutCallbacks } from './helpers';
 
 describe('StripLayout', () => {
     it('computes child rectangles', () => {
         const tree = createStarTopology(3);
         const weights = new Float32Array([3, 1, 1, 1]);
         const result = new Array<Rect>(tree.numberOfNodes);
+        const scratch = createLayoutScratch(tree);
 
         StripLayout.compute(
             tree,
@@ -16,9 +17,9 @@ describe('StripLayout', () => {
             1.0,
             result,
             noOpLayoutCallbacks,
-            new Array(tree.numberOfNodes),
-            new Array(tree.numberOfNodes),
-            new Array(tree.numberOfNodes)
+            scratch.accessorySpace,
+            scratch.labelRects,
+            scratch.labelPaddingSpaces
         );
 
         expect(result[1].area).toBeGreaterThan(0);

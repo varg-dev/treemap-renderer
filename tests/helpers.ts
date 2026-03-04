@@ -1,4 +1,5 @@
-import { LayoutCallbacks } from '../source/layout';
+import { Configuration } from '../source/configuration';
+import { Layout, LayoutCallbacks } from '../source/layout';
 import { Node } from '../source/node';
 import { Rect } from '../source/rect';
 import { Topology } from '../source/topology';
@@ -18,6 +19,35 @@ export function collectChildren(tree: Topology, parent: Node): Node[] {
     const result: Node[] = [];
     tree.childrenDo(parent, (child) => result.push(child));
     return result;
+}
+
+export function createLayoutScratch(tree: Topology): {
+    accessorySpace: Rect[];
+    labelRects: Rect[];
+    labelPaddingSpaces: number[];
+} {
+    return {
+        accessorySpace: new Array<Rect>(tree.numberOfNodes),
+        labelRects: new Array<Rect>(tree.numberOfNodes),
+        labelPaddingSpaces: new Array<number>(tree.numberOfNodes),
+    };
+}
+
+export function createMinimalLayoutConfiguration(
+    algorithm: Layout.LayoutAlgorithm
+): Configuration.Layout {
+    return {
+        algorithm,
+        weight: 'buffer:weights',
+        aspectRatio: 1.0,
+    };
+}
+
+export function createMinimalGeometryConfiguration(): Configuration.Geometry {
+    return {
+        parentLayer: {},
+        leafLayer: {},
+    };
 }
 
 export const noOpLayoutCallbacks: LayoutCallbacks = {
