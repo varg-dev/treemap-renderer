@@ -354,7 +354,7 @@ export namespace Configuration {
         }
 
         return 'type' in object
-            && object.type in AttributeBuffer.LinearizationMapping
+            && Object.values(AttributeBuffer.LinearizationMapping).includes(object.type)
             && 'mapping' in object;
     }
 
