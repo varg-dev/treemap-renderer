@@ -23,9 +23,27 @@ export class Rect {
     private _curve: number = Rect.CurveOrientation.CW;
 
     /**
-     * Orientation of the rectangle. Used to identify reversed rectangles for strip-inverted layouting.
+     * Derive enum orientation from canonical frame state.
      */
-    orientation: Rect.Orientation | undefined;
+    private static orientationFromFrame(rotation: number, curve: number): Rect.Orientation {
+        return (curve * 4 + rotation) as Rect.Orientation;
+    }
+
+    /**
+     * Derive canonical frame state from enum orientation.
+     */
+    private static frameFromOrientation(orientation: Rect.Orientation | undefined):
+        { rotation: number; curve: number } | undefined {
+        if (orientation === undefined) {
+            return undefined;
+        }
+
+        const value = orientation as number;
+        return {
+            rotation: value % 4,
+            curve: Math.floor(value / 4),
+        };
+    }
 
     /**
      * Create a clone of the rectangle.
@@ -54,7 +72,9 @@ export class Rect {
         this._right = Math.max(right, left);
         this._bottom = bottom;
         this._top = Math.max(top, bottom);
-        this.orientation = orientation;
+        if (orientation !== undefined) {
+            this.orientation = orientation;
+        }
     }
 
     private inheritMeta(target: Rect): Rect {
@@ -95,11 +115,24 @@ export class Rect {
      * Accessor for the inverse status regarding the rectangle orientation.
      */
     get isReversed(): boolean {
-        if (this.orientation === undefined) {
-            return false;
+        return this._curve === Rect.CurveOrientation.CCW;
+    }
+
+    /**
+     * Compatibility accessor exposing frame state as orientation enum.
+     */
+    get orientation(): Rect.Orientation {
+        return Rect.orientationFromFrame(this._rotation, this._curve);
+    }
+
+    set orientation(orientation: Rect.Orientation) {
+        const frame = Rect.frameFromOrientation(orientation);
+        if (frame === undefined) {
+            return;
         }
 
-        return this.orientation >= Rect.Orientation.DC;
+        this._rotation = frame.rotation;
+        this._curve = frame.curve;
     }
 
     /**
@@ -332,7 +365,13 @@ export class Rect {
         const newRight = Math.min(newLeft + extX * this.width, this._right);
         const newTop = Math.min(newBottom + extY * this.height, this._top);
 
-        return this.inheritMeta(new Rect(newLeft, newBottom, newRight, newTop, orientation));
+        const rect = new Rect(newLeft, newBottom, newRight, newTop);
+        if (orientation !== undefined) {
+            rect.orientation = orientation;
+            return rect;
+        }
+
+        return this.inheritMeta(rect);
     }
 
     /**

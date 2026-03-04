@@ -796,8 +796,6 @@ export class HilbertLayout {
         result[tree.root.index].centerAround([0.5, 0.5]);
         const weightsByLayout = weightsToLayoutIndexSpace(tree, weights);
 
-        console.log(weightsByLayout);
-
         tree.forEachInnerNode((parent: Node) => {
             // Resize parent space for children
             let layoutRect = layoutCallbacks.accessoryPaddingCallback(
@@ -850,8 +848,6 @@ export class MooreLayout {
         result[tree.root.index] = new Rect(0, 0, aspectRatio, 1);
         result[tree.root.index].centerAround([0.5, 0.5]);
         const weightsByLayout = weightsToLayoutIndexSpace(tree, weights);
-
-        console.log(weightsByLayout);
 
         tree.forEachInnerNode((parent: Node) => {
             // Resize parent space for children
