@@ -213,7 +213,7 @@
 
         "layout": { "type": "object", "properties": {
 
-                "algorithm": { "type": "string", "enum": [ "strip", "snake", "codecity" ] },
+                "algorithm": { "type": "string", "enum": [ "strip", "snake", "codecity", "hilbert", "moore" ] },
 
                 "weight": { "$ref": "/BufferReference" },
 

@@ -18,6 +18,12 @@ export class Topology {
     private _linearization: Linearization = new Linearization();
 
     /**
+     * Secondary linearization used by layout processing.
+     * This stores a straightforward breadth-first order including leaves in depth slices.
+     */
+    private _layoutLinearization: Linearization = new Linearization();
+
+    /**
      * The vector of nodes that are currently part of the tree.
      */
     private _nodes: Array<Node> = new Array<Node>();
@@ -45,6 +51,16 @@ export class Topology {
      * edge list indices.
      */
     private _topologyIndexToEdgeIndexMap = new Array<number>();
+
+    /**
+     * Maps render index -> layout index.
+     */
+    private _renderToLayoutIndexMap = new Array<number>();
+
+    /**
+     * Maps layout index -> render index.
+     */
+    private _layoutToRenderIndexMap = new Array<number>();
 
 
     private fromInterleavedEdgesIdById(edges: Array<number>): void {
@@ -199,61 +215,113 @@ export class Topology {
     }
 
 
-    private fromNodes(newNodes: Array<Node>, nodesByDepth: Array<Array<Node>>): void {
+    private bfsDepthSlices(nodes: Array<Node>): Array<Array<Node>> {
+        if (nodes.length === 0) {
+            return [];
+        }
+
+        const slices: Array<Array<Node>> = [];
+        let current: Array<Node> = [nodes[0]];
+
+        while (current.length > 0) {
+            slices.push(current);
+            const next: Array<Node> = [];
+
+            for (const parent of current) {
+                for (let childIndex = parent.firstChild; childIndex !== Node.INVALID_INDEX;
+                    childIndex = nodes[childIndex].nextSibling) {
+                    next.push(nodes[childIndex]);
+                }
+            }
+
+            current = next;
+        }
+
+        return slices;
+    }
+
+    private fromNodes(newNodes: Array<Node>, _nodesByDepth: Array<Array<Node>>): void {
         this._linearization.clear();
+        this._layoutLinearization.clear();
 
         this._innerNodeIndicesById.clear();
         this._leafNodeIndicesById.clear();
         this._edgeIndexToTopologyIndexMap.length = newNodes.length;
         this._topologyIndexToEdgeIndexMap.length = newNodes.length;
+        this._renderToLayoutIndexMap.length = newNodes.length;
+        this._layoutToRenderIndexMap.length = newNodes.length;
         this._edgeIndexToTopologyIndexMap.fill(-1);
         this._topologyIndexToEdgeIndexMap.fill(-1);
+        this._renderToLayoutIndexMap.fill(-1);
+        this._layoutToRenderIndexMap.fill(-1);
 
-        const leafNodes = new Array<Node>();
-        const filteredNodesByDepth = new Array<Array<Node>>();
+        const layoutSlices = this.bfsDepthSlices(newNodes);
+        const renderInnerSlices = new Array<Array<Node>>();
+        const renderLeafBucket = new Array<Node>();
 
-        for (const depthSlice of nodesByDepth) {
-            const filteredNodes = depthSlice.filter((value: Node) => value.isLeaf);
-            for (const node of filteredNodes) {
-                leafNodes.push(node);
+        for (const depthSlice of layoutSlices) {
+            const inner = depthSlice.filter((value: Node) => !value.isLeaf);
+            const leaves = depthSlice.filter((value: Node) => value.isLeaf);
+
+            if (inner.length > 0) {
+                renderInnerSlices.push(inner);
             }
-            const filteredSlice = depthSlice.filter((value: Node) => !value.isLeaf);
-            if (filteredSlice.length > 0) {
-                filteredNodesByDepth.push(filteredSlice);
-            }
+            renderLeafBucket.push(...leaves);
         }
 
-        filteredNodesByDepth.push(leafNodes);
-
-        for (const depthSlice of filteredNodesByDepth) {
+        const renderSlices = [...renderInnerSlices, renderLeafBucket];
+        for (const depthSlice of renderSlices) {
             this._linearization.addSliceByLength(depthSlice.length);
         }
 
-        const newIndices = new Map<number, number>();
+        for (const depthSlice of layoutSlices) {
+            this._layoutLinearization.addSliceByLength(depthSlice.length);
+        }
+
+        const renderIndices = new Map<number, number>();
+        const layoutIndices = new Map<number, number>();
         this._nodes.length = newNodes.length;
 
-        newIndices.set(-1, -1);
+        renderIndices.set(-1, -1);
+        layoutIndices.set(-1, -1);
 
-        let index = 0;
-        for (const nodes of filteredNodesByDepth) {
-            for (const node of nodes) {
-                this._nodes[index] = node;
-                (node.isLeaf ? this._leafNodeIndicesById : this._innerNodeIndicesById)
-                    .set(node.id, index);
-
-                newIndices.set(node.index, index);
-                this._edgeIndexToTopologyIndexMap[node.index] = index;
-                this._topologyIndexToEdgeIndexMap[index] = node.index;
-                ++index;
+        let layoutIndex = 0;
+        for (const depthSlice of layoutSlices) {
+            for (const node of depthSlice) {
+                layoutIndices.set(node.index, layoutIndex);
+                ++layoutIndex;
             }
+        }
+
+        let renderIndex = 0;
+        for (const nodes of renderSlices) {
+            for (const node of nodes) {
+                this._nodes[renderIndex] = node;
+                (node.isLeaf ? this._leafNodeIndicesById : this._innerNodeIndicesById)
+                    .set(node.id, renderIndex);
+
+                renderIndices.set(node.index, renderIndex);
+                this._edgeIndexToTopologyIndexMap[node.index] = renderIndex;
+                this._topologyIndexToEdgeIndexMap[renderIndex] = node.index;
+                ++renderIndex;
+            }
+        }
+
+        for (let oldIndex = 0; oldIndex < newNodes.length; ++oldIndex) {
+            const newRenderIndex = renderIndices.get(oldIndex) as number;
+            const newLayoutIndex = layoutIndices.get(oldIndex) as number;
+
+            this._renderToLayoutIndexMap[newRenderIndex] = newLayoutIndex;
+            this._layoutToRenderIndexMap[newLayoutIndex] = newRenderIndex;
         }
 
         // Fix indices
         for (const node of this._nodes) {
-            node.index = newIndices.get(node.index) as number;
-            node.parent = newIndices.get(node.parent) as number;
-            node.initialNextSibling = newIndices.get(node.initialNextSibling) as number;
-            node.initialFirstChild = newIndices.get(node.initialFirstChild) as number;
+            node.layoutIndex = layoutIndices.get(node.index) as number;
+            node.index = renderIndices.get(node.index) as number;
+            node.parent = renderIndices.get(node.parent) as number;
+            node.initialNextSibling = renderIndices.get(node.initialNextSibling) as number;
+            node.initialFirstChild = renderIndices.get(node.initialFirstChild) as number;
             node.nextSibling = node.initialNextSibling;
             node.firstChild = node.initialFirstChild;
         }
@@ -453,6 +521,64 @@ export class Topology {
     }
 
     /**
+     * Return the contiguous sibling span in render index space as half-open interval [first, last).
+     * This span can include unrelated nodes if children are non-adjacent in render space.
+     */
+    childrenAsRenderRange(parent: Node): { first: number; last: number } {
+        assert(parent !== undefined, `Parent is expected to be valid.`);
+
+        if (parent.firstChild === Node.INVALID_INDEX) {
+            return { first: 0, last: 0 };
+        }
+
+        const first = parent.firstChild;
+        let lastNode = this.node(first)!;
+
+        while (lastNode.nextSibling !== Node.INVALID_INDEX) {
+            lastNode = this.node(lastNode.nextSibling)!;
+        }
+
+        return { first, last: lastNode.index + 1 };
+    }
+
+    /**
+     * Return the contiguous sibling range in layout index space as half-open interval [first, last).
+     */
+    childrenAsLayoutRange(parent: Node): { first: number; last: number } {
+        assert(parent !== undefined, `Parent is expected to be valid.`);
+
+        if (parent.firstChild === Node.INVALID_INDEX) {
+            return { first: 0, last: 0 };
+        }
+
+        let first = Node.INVALID_INDEX;
+        let previous = Node.INVALID_INDEX;
+        let count = 0;
+
+        this.childrenDo(parent, (child: Node) => {
+            const current = this._renderToLayoutIndexMap[child.index];
+
+            if (first === Node.INVALID_INDEX) {
+                first = current;
+            } else if (current !== previous + 1) {
+                throw new Error('Expected children to form a contiguous range in layout space');
+            }
+
+            previous = current;
+            ++count;
+        });
+
+        return { first, last: first + count };
+    }
+
+    /**
+     * Return the contiguous sibling range in layout index space as half-open interval [first, last).
+     */
+    childrenAsRange(parent: Node): { first: number; last: number } {
+        return this.childrenAsLayoutRange(parent);
+    }
+
+    /**
      * Iterate over all right siblings in the original order
      * @param callback - The callback.
      */
@@ -498,6 +624,13 @@ export class Topology {
      */
     get linearization(): Linearization {
         return this._linearization;
+    }
+
+    /**
+     * Get layout-oriented linearization containing strict breadth-first depth slices.
+     */
+    get layoutLinearization(): Linearization {
+        return this._layoutLinearization;
     }
 
     /**
@@ -560,6 +693,20 @@ export class Topology {
      */
     get topologyIndexToEdgeIndexMap() {
         return this._topologyIndexToEdgeIndexMap;
+    }
+
+    /**
+     * Get render-index to layout-index map.
+     */
+    get renderToLayoutIndexMap() {
+        return this._renderToLayoutIndexMap;
+    }
+
+    /**
+     * Get layout-index to render-index map.
+     */
+    get layoutToRenderIndexMap() {
+        return this._layoutToRenderIndexMap;
     }
 }
 

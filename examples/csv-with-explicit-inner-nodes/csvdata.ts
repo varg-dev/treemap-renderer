@@ -216,7 +216,7 @@ export class CSVData {
         ];
 
         config.layout = {
-            algorithm: 'snake',
+            algorithm: 'hilbert',
             weight: 'bufferView:weights',
             sort: {
                 key: 'bufferView:weights',

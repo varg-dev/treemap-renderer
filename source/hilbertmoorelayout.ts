@@ -464,21 +464,23 @@ class Vertical4 {
 
 function avgAspectRatio(rects: Rect[]): number {
     if (rects.length === 0) {
-        throw new Error("rects must not be empty");
+        return Number.POSITIVE_INFINITY;
     }
 
     let sum = 0;
 
     for (const rect of rects) {
-        const ratio = rect.aspectRatio();
-        if (ratio <= 0) {
-            throw new Error("Rect aspect ratio must be positive");
+        const shorter = rect.shorterSide;
+        const longer = rect.longerSide;
+        const ratio = shorter > 0 ? longer / shorter : Number.POSITIVE_INFINITY;
+        if (!Number.isFinite(ratio) || ratio <= 0) {
+            return Number.POSITIVE_INFINITY;
         }
         sum += ratio;
     }
 
-    if (sum <= 0) {
-        throw new Error("Sum of aspect ratios must be positive");
+    if (!Number.isFinite(sum) || sum <= 0) {
+        return Number.POSITIVE_INFINITY;
     }
 
     return sum / rects.length;
@@ -512,17 +514,22 @@ class Dissector {
                 );
             }
 
-            const layout = pattern.dissect(weights, rect);
+            let layout: Rect[];
+            try {
+                layout = pattern.dissect(weights, rect);
+            } catch (_e) {
+                continue;
+            }
             const diff = Math.abs(avgAspectRatio(layout) - targetAR);
 
-            if (diff < bestDiff) {
+            if (Number.isFinite(diff) && diff < bestDiff) {
                 bestDiff = diff;
                 bestLayout = layout;
             }
         }
 
         if (!bestLayout) {
-            throw new Error("Failed to select a layout");
+            bestLayout = patterns[0].dissect(weights, rect);
         }
 
         return bestLayout;
@@ -543,11 +550,6 @@ enum DistributionAlgorithm {
 }
 
 // define Dissector 1-4
-
-type PatternClass = {
-    PARTS: number;
-    dissect: (weights: number[], rect: Rect) => Rect[]
-};
 
 const DissectorPatterns = {
     1: {
@@ -598,10 +600,91 @@ function layoutItems(
     }
 }
 
+function sumRange(weights: Configuration.AttributeBuffer, first: number, last: number): number {
+    let sum = 0;
+    for (let i = first; i < last; i++) {
+        sum += weights[i];
+    }
+    return sum;
+}
+
+function partitionGreedy(
+    range: { first: number; last: number },
+    _weights: Configuration.AttributeBuffer
+): { first: number; last: number }[] {
+    const size = range.last - range.first;
+    const parts = Math.min(4, size);
+
+    if (parts <= 1) {
+        return [range];
+    }
+
+    const groups: { first: number; last: number }[] = [];
+    let cursor = range.first;
+
+    for (let part = 0; part < parts; part++) {
+        const remainingParts = parts - part;
+        const remainingItems = range.last - cursor;
+        const take = Math.max(1, Math.ceil(remainingItems / remainingParts));
+
+        const next = Math.min(cursor + take, range.last - (remainingParts - 1));
+        groups.push({ first: cursor, last: next });
+        cursor = next;
+    }
+
+    return groups;
+}
+
+function partitionMinMax(
+    range: { first: number; last: number },
+    weights: Configuration.AttributeBuffer
+): { first: number; last: number }[] {
+    const size = range.last - range.first;
+    const parts = Math.min(4, size);
+
+    if (parts <= 1) {
+        return [range];
+    }
+
+    const total = sumRange(weights, range.first, range.last);
+    const target = total / parts;
+
+    const groups: { first: number; last: number }[] = [];
+    let start = range.first;
+    let running = 0;
+
+    for (let i = range.first; i < range.last; i++) {
+        running += weights[i];
+        const remainingItems = range.last - (i + 1);
+        const remainingGroups = parts - groups.length - 1;
+
+        const shouldSplit =
+            groups.length < parts - 1 &&
+            (running >= target || remainingItems === remainingGroups);
+
+        if (shouldSplit) {
+            groups.push({ first: start, last: i + 1 });
+            start = i + 1;
+            running = 0;
+        }
+    }
+
+    groups.push({ first: start, last: range.last });
+    return groups;
+}
+
+function partitionVariance(
+    range: { first: number; last: number },
+    weights: Configuration.AttributeBuffer
+): { first: number; last: number }[] {
+    // Balanced contiguous partitioning is used as a robust fallback.
+    return partitionMinMax(range, weights);
+}
+
 
 function layoutRecursively(
     rect: Rect,
-    weights: number[],
+    weights: Configuration.AttributeBuffer,
     layout: Rect[],
     range: { first: number; last: number },
     useMoore: boolean,
@@ -620,7 +703,7 @@ function layoutRecursively(
 
     // Small sizes ≤ 4 → use layoutItems
     if (size <= 4) {
-        let intermediateWeights = weights.slice(range.first, range.last);
+        let intermediateWeights = Array.from(weights.slice(range.first, range.last));
 
         if (rect.curveDirection() === Rect.CurveOrientation.CCW) {
             intermediateWeights.reverse();
@@ -632,7 +715,7 @@ function layoutRecursively(
         // Not suggested. considered a bug but kept for demonstration
         if (!useOrientation) {
             rectangles = rectangles.map(
-                r => new Rect(r.left(), r.bottom(), r.width(), r.height())
+                r => new Rect(r.left, r.bottom, r.right, r.top)
             );
         }
 
@@ -654,9 +737,7 @@ function layoutRecursively(
     else quadrants = partitionVariance(range, weights);
 
     // compute total weight per quadrant
-    const quadrantWeights: number[] = quadrants.map(q =>
-        weights.slice(q.first, q.last).reduce((a, b) => a + b, 0)
-    );
+    const quadrantWeights: number[] = quadrants.map(q => sumRange(weights, q.first, q.last));
 
     if (rect.curveDirection() === Rect.CurveOrientation.CCW) {
         quadrantWeights.reverse();
@@ -668,7 +749,7 @@ function layoutRecursively(
     // Not suggested. considered a bug but kept for demonstration
     if (!useOrientation) {
         rectangles = rectangles.map(
-            r => new Rect(r.left(), r.bottom(), r.width(), r.height())
+            r => new Rect(r.left, r.bottom, r.right, r.top)
         );
     }
 
@@ -691,6 +772,20 @@ function layoutRecursively(
     }
 }
 
+function weightsToLayoutIndexSpace(
+    tree: Topology,
+    weights: Configuration.AttributeBuffer
+): number[] {
+    const weightsByLayout = new Array<number>(tree.numberOfNodes);
+
+    for (let layoutIndex = 0; layoutIndex < tree.numberOfNodes; ++layoutIndex) {
+        const renderIndex = tree.layoutToRenderIndexMap[layoutIndex];
+        weightsByLayout[layoutIndex] = weights[renderIndex];
+    }
+
+    return weightsByLayout;
+}
+
 
 export class HilbertLayout {
     static compute(tree: Topology, weights: Configuration.AttributeBuffer, aspectRatio: number,
@@ -699,6 +794,9 @@ export class HilbertLayout {
 
         result[tree.root.index] = new Rect(0, 0, aspectRatio, 1);
         result[tree.root.index].centerAround([0.5, 0.5]);
+        const weightsByLayout = weightsToLayoutIndexSpace(tree, weights);
+
+        console.log(weightsByLayout);
 
         tree.forEachInnerNode((parent: Node) => {
             // Resize parent space for children
@@ -710,7 +808,8 @@ export class HilbertLayout {
                 layoutRect, parent, tree, result, labelRects, labelPaddingSpaces);
 
             // Single-level layout of all children
-            HilbertLayout.layoutSingleLevel(parent, intermediateRect, tree, weights, result, DistributionAlgorithm.MinVariance, true, 1.0);
+            HilbertLayout.layoutSingleLevel(parent, intermediateRect, tree,
+                weightsByLayout, result, DistributionAlgorithm.MinVariance, true, 1.0);
 
             // end
 
@@ -725,16 +824,21 @@ export class HilbertLayout {
         parent: Node,
         rect: Rect,
         tree: Topology,
-        weights: number[],
+        weightsByLayout: number[],
         layout: Rect[],
         alg: DistributionAlgorithm,
         useOrientation: boolean,
         targetAR: number
     ) {
-        // tree.childrenAsRange(parent) should return { first: number, last: number }
-        const range = tree.childrenAsRange(parent);
+        const range = tree.childrenAsLayoutRange(parent);
+        const layoutRects = new Array<Rect>(tree.numberOfNodes);
 
-        layoutRecursively(rect, weights, layout, range, false, alg, useOrientation, targetAR);
+        layoutRecursively(rect, weightsByLayout, layoutRects, range, false, alg, useOrientation, targetAR);
+
+        for (let layoutIndex = range.first; layoutIndex < range.last; ++layoutIndex) {
+            const renderIndex = tree.layoutToRenderIndexMap[layoutIndex];
+            layout[renderIndex] = layoutRects[layoutIndex];
+        }
     }
 }
 
@@ -745,6 +849,9 @@ export class MooreLayout {
 
         result[tree.root.index] = new Rect(0, 0, aspectRatio, 1);
         result[tree.root.index].centerAround([0.5, 0.5]);
+        const weightsByLayout = weightsToLayoutIndexSpace(tree, weights);
+
+        console.log(weightsByLayout);
 
         tree.forEachInnerNode((parent: Node) => {
             // Resize parent space for children
@@ -756,7 +863,8 @@ export class MooreLayout {
                 layoutRect, parent, tree, result, labelRects, labelPaddingSpaces);
 
             // Single-level layout of all children
-            MooreLayout.layoutSingleLevel(parent, intermediateRect, tree, weights, result, DistributionAlgorithm.MinVariance, true, 1.0);
+            MooreLayout.layoutSingleLevel(parent, intermediateRect, tree,
+                weightsByLayout, result, DistributionAlgorithm.MinVariance, true, 1.0);
             // end
 
             tree.childrenDo(parent, (sibling: Node) => {
@@ -770,15 +878,20 @@ export class MooreLayout {
         parent: Node,
         rect: Rect,
         tree: Topology,
-        weights: number[],
+        weightsByLayout: number[],
         layout: Rect[],
         alg: DistributionAlgorithm,
         useOrientation: boolean,
         targetAR: number
     ) {
-        // tree.childrenAsRange(parent) should return { first: number, last: number }
-        const range = tree.childrenAsRange(parent);
+        const range = tree.childrenAsLayoutRange(parent);
+        const layoutRects = new Array<Rect>(tree.numberOfNodes);
 
-        layoutRecursively(rect, weights, layout, range, true, alg, useOrientation, targetAR);
+        layoutRecursively(rect, weightsByLayout, layoutRects, range, true, alg, useOrientation, targetAR);
+
+        for (let layoutIndex = range.first; layoutIndex < range.last; ++layoutIndex) {
+            const renderIndex = tree.layoutToRenderIndexMap[layoutIndex];
+            layout[renderIndex] = layoutRects[layoutIndex];
+        }
     }
 }

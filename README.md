@@ -51,6 +51,8 @@ The treemaps that this renderer currently supports a as follows:
   * Splitting Layout:
     * Strip Treemap
     * Snake Treemap
+    * Hilbert Treemap
+    * Moore Treemap
   * Node Sorting
   * Margins between Nodes
 * Color Mappings:

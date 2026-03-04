@@ -15,9 +15,14 @@ export class Node {
 
 
     /**
-     * Index in the linearization (0 is root).
+     * Index in the render linearization (0 is root).
      */
     index = Node.INVALID_INDEX;
+
+    /**
+     * Index in the layout linearization (breadth-first with inner and leaf nodes intertwined).
+     */
+    layoutIndex = Node.INVALID_INDEX;
 
     /**
      * Identifier assigned by the user.

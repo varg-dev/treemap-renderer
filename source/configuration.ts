@@ -14,7 +14,6 @@ import TREEMAP_SCHEMA_JSON from './data/treemap.schema.json';
 import BUFFER_REFERENCE_SCHEMA_JSON from './data/bufferreference.schema.json';
 import COLOR_REFERENCE_SCHEMA_JSON from './data/colorreference.schema.json';
 import COLOR_SCHEMA_SCHEMA_JSON from './data/colorscheme.schema.json';
-import { Linearization } from './linearization';
 
 /* spellchecker: enable */
 

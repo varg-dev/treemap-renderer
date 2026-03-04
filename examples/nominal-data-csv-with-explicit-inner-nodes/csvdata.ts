@@ -20,7 +20,7 @@ export class CSVHeader {
     public weight_column: string;
     public height_column: string;
     public color_column: string;
-    public color_parameters : Map<string, number | undefined> | undefined;
+    public color_parameters: Map<string, number | undefined> | undefined;
     public label_column: string;
 }
 
@@ -54,8 +54,8 @@ export class CSVData {
             } else if (key == 'colors') {
                 header.color_column = value || '';
                 //TODO undefined abfangen, wenn nur manche parameter initialisiert sind
-                if(parameters) header.color_parameters = new Map<string, number>(
-                        parameters.split(';').map(parameterPair=> parameterPair.split('=') as [string, number]));
+                if (parameters) header.color_parameters = new Map<string, number>(
+                    parameters.split(';').map(parameterPair => parameterPair.split('=') as [string, number]));
             } else if (key == 'labels') {
                 header.label_column = value || '';
             } else {
@@ -89,7 +89,7 @@ export class CSVData {
             const parameterValuesSet = () => {
                 let valuesSet = false;
                 header.color_parameters?.forEach((value: number | undefined, key: string, map) => {
-                    if(value) valuesSet = true;
+                    if (value) valuesSet = true;
                 });
                 return valuesSet;
             }
@@ -97,12 +97,12 @@ export class CSVData {
             const column = result.data.map((row: any) => {
                 let value = row[name] ? row[name] : -1.0;
 
-                if(isNaN(value)) {
-                    if(header.color_parameters === undefined) {
+                if (isNaN(value)) {
+                    if (header.color_parameters === undefined) {
                         if (!colorMap.has(value)) colorMap.set(value, colorMappingIndex++);
                         return colorMap.get(value);
                     }
-                    if(parameterValuesSet()) {
+                    if (parameterValuesSet()) {
                         return (header.color_parameters!.get(value) ? header.color_parameters!.get(value) : 0);
                     }
                 }
@@ -241,7 +241,7 @@ export class CSVData {
         ];
 
         config.layout = {
-            algorithm: 'snake',
+            algorithm: 'hilbert',
             weight: 'bufferView:weights',
             sort: {
                 key: 'bufferView:weights',

@@ -304,7 +304,7 @@ export class CBDData {
         ];
 
         config.layout = {
-            algorithm: 'snake',
+            algorithm: 'hilbert',
             weight: 'bufferView:weights',
             sort: {
                 key: 'bufferView:weights',
