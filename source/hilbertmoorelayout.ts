@@ -600,6 +600,67 @@ function layoutItems(
     }
 }
 
+function evenPartition(
+    range: { first: number; last: number },
+    parts: number
+): { first: number; last: number }[] {
+    const size = range.last - range.first;
+    const actualParts = Math.max(1, Math.min(parts, size));
+    const result: { first: number; last: number }[] = [];
+    let cursor = range.first;
+
+    for (let part = 0; part < actualParts; ++part) {
+        const remainingParts = actualParts - part;
+        const remainingItems = range.last - cursor;
+        const take = Math.max(1, Math.ceil(remainingItems / remainingParts));
+        const next = Math.min(cursor + take, range.last - (remainingParts - 1));
+        result.push({ first: cursor, last: next });
+        cursor = next;
+    }
+
+    return result;
+}
+
+function normalizePartitions(
+    range: { first: number; last: number },
+    partitions: { first: number; last: number }[]
+): { first: number; last: number }[] {
+    const size = range.last - range.first;
+    if (size <= 1) {
+        return [range];
+    }
+
+    if (partitions.length < 2 || partitions.length > 4) {
+        return evenPartition(range, Math.min(4, size));
+    }
+
+    let cursor = range.first;
+    for (const partition of partitions) {
+        if (partition.first !== cursor || partition.last <= partition.first || partition.last > range.last) {
+            return evenPartition(range, Math.min(4, size));
+        }
+        cursor = partition.last;
+    }
+
+    if (cursor !== range.last) {
+        return evenPartition(range, Math.min(4, size));
+    }
+
+    return partitions;
+}
+
+function sanitizeWeightForPartition(weight: number): number {
+    return Number.isFinite(weight) && weight > 0.0 ? weight : 0.0;
+}
+
+function prepareTemplateWeights(weights: number[]): number[] {
+    const minimumWeight = 1e-12;
+    return weights.map((weight) => {
+        const sanitized = Number.isFinite(weight) && weight > 0.0 ? weight : 0.0;
+        return Math.max(sanitized, minimumWeight);
+    });
+}
+
 function buildPrefixSums(weights: Configuration.AttributeBuffer): number[] {
     const prefixSums = new Array<number>(weights.length + 1);
     prefixSums[0] = 0.0;
@@ -684,7 +745,7 @@ function partitionGreedy(
 
     cuts.push({ first: range.first + last, last: range.last });
 
-    return cuts;
+    return normalizePartitions(range, cuts);
 }
 
 function partitionMinMax(
@@ -763,7 +824,7 @@ function partitionMinMax(
         }
     }
 
-    return bestCuts;
+    return normalizePartitions(range, bestCuts);
 }
 
 function partitionVariance(
@@ -835,7 +896,9 @@ function partitionVariance(
         }
     }
 
-    return cuts.length === 4 ? cuts : partitionMinMax(range, weights, prefixSums);
+    return cuts.length === 4
+        ? normalizePartitions(range, cuts)
+        : partitionMinMax(range, weights, prefixSums);
 }
 
 
@@ -866,6 +929,7 @@ function layoutRecursively(
         if (rect.curveDirection() === Rect.CurveOrientation.CCW) {
             intermediateWeights.reverse();
         }
+        intermediateWeights = prepareTemplateWeights(intermediateWeights);
 
         const orientation = useMoore ? CurveType.Moore : CurveType.Hilbert;
         let rectangles = layoutItems(intermediateWeights, rect, targetAR, orientation);
@@ -893,14 +957,16 @@ function layoutRecursively(
     if (alg === DistributionAlgorithm.Greedy) quadrants = partitionGreedy(range, weights);
     else if (alg === DistributionAlgorithm.MinMax) quadrants = partitionMinMax(range, weights, prefixSums);
     else quadrants = partitionVariance(range, weights, prefixSums);
+    quadrants = normalizePartitions(range, quadrants);
 
     // compute total weight per quadrant
-    const quadrantWeights: number[] =
+    let quadrantWeights: number[] =
         quadrants.map(q => sumRangeFromPrefix(prefixSums, q.first, q.last));
 
     if (rect.curveDirection() === Rect.CurveOrientation.CCW) {
         quadrantWeights.reverse();
     }
+    quadrantWeights = prepareTemplateWeights(quadrantWeights);
 
     const orientation = useMoore ? CurveType.Moore : CurveType.Hilbert;
     let rectangles = layoutItems(quadrantWeights, rect, targetAR, orientation);
@@ -940,7 +1006,7 @@ function weightsToLayoutIndexSpace(
 
     for (let layoutIndex = 0; layoutIndex < tree.numberOfNodes; ++layoutIndex) {
         const renderIndex = tree.layoutToRenderIndexMap[layoutIndex];
-        weightsByLayout[layoutIndex] = weights[renderIndex];
+        weightsByLayout[layoutIndex] = sanitizeWeightForPartition(weights[renderIndex]);
     }
 
     return weightsByLayout;

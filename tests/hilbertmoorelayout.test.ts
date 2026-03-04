@@ -191,6 +191,25 @@ describe.each(layoutsUnderTest)('$name layout', ({ algorithm, compute }) => {
         }
     });
 
+    it('handles zero-weight data without producing invalid rectangles', () => {
+        const tree = createStarTopology(8);
+        const weights = new Float32Array(9); // root + 8 children, all zero
+
+        const { result } = runLayout(compute, tree, weights);
+        const children = collectChildren(tree, tree.root);
+
+        for (const child of children) {
+            const childRect = result[child.index];
+            expect(childRect).toBeDefined();
+            if (childRect === undefined) {
+                continue;
+            }
+
+            expect(childRect.isValid()).toBe(true);
+            expect(Number.isFinite(childRect.area)).toBe(true);
+        }
+    });
+
     it('supports multi-level trees and keeps descendants inside each parent', () => {
         const tree = createMultiLevelTopology();
         const weights = createWeightsByNodeId(tree, {
