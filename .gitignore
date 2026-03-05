@@ -9,3 +9,5 @@ doc
 test-results
 varg-dev-treemap-renderer-*.tgz
 /.idea/
+.tsbuildinfo
+*.tsbuildinfo

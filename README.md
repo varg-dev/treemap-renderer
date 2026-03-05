@@ -14,7 +14,27 @@ npm install
 # Development
 
 ```bash
-npm run build:dev
+npm run dev
+```
+
+# Build
+
+Default production library build (CJS + ESM + type declarations):
+
+```bash
+npm run build
+```
+
+Fast local build (CJS + ESM, no declaration emit):
+
+```bash
+npm run build:fast
+```
+
+Release build (CJS + ESM + UMD + type declarations):
+
+```bash
+npm run build:release
 ```
 
 # Integration and Usage

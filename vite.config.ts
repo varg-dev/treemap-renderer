@@ -33,10 +33,12 @@ try {
 }
 
 /**
- * 3 modes are considered:
+ * 4 modes are considered:
  * - Development: don't emit anything, serve website and library in dev mode. (development, vite dev)
- * - Lib Prod: Emit library build as cjs, umd, and es. (production, vite build)
- * - Website Prod: Emit website with library as dependency. (website, vite build --mode=website)
+ * - Fast: local iteration build (no minify, no d.ts, no sourcemaps). (fast, vite build --mode=fast)
+ * - Production: standard lib build as cjs + es. (production, vite build)
+ * - Release: lib build as cjs + umd + es. (release, vite build --mode=release)
+ * - Website: static website build. (website, vite build --mode=website)
  */
 export default defineConfig(({ mode }) => {
 
@@ -51,6 +53,12 @@ export default defineConfig(({ mode }) => {
         assetsInclude: ['**/*.fnt'],
     };
 
+    const libExternal = ['webgl-operate', 'rxjs'];
+    const umdGlobals = {
+        'webgl-operate': 'webgl_operate',
+        rxjs: 'rxjs',
+    };
+
     switch (mode) {
 
         case 'development':
@@ -59,10 +67,51 @@ export default defineConfig(({ mode }) => {
                 lib: {
                     entry: resolve(source, 'treemap-renderer.ts'),
                     name: 'treemap-renderer',
+                    formats: ['cjs', 'es'],
+                },
+                sourcemap: false,
+                rollupOptions: {
+                    external: libExternal,
+                },
+            };
+            break;
+
+        case 'fast':
+            config.build = {
+                outDir,
+                lib: {
+                    entry: resolve(source, 'treemap-renderer.ts'),
+                    name: 'treemap-renderer',
+                    formats: ['cjs', 'es'],
+                },
+                minify: false,
+                sourcemap: false,
+                rollupOptions: {
+                    external: libExternal,
+                },
+            };
+            config.define!.__DISABLE_ASSERTIONS__ = JSON.stringify(true);
+            config.define!.__LOG_VERBOSITY_THRESHOLD__ = JSON.stringify(2);
+            break;
+
+        case 'release':
+            config.build = {
+                outDir,
+                lib: {
+                    entry: resolve(source, 'treemap-renderer.ts'),
+                    name: 'treemap-renderer',
                     formats: ['cjs', 'umd', 'es'],
                 },
-                sourcemap: 'hidden',
+                sourcemap: false,
+                rollupOptions: {
+                    external: libExternal,
+                    output: {
+                        globals: umdGlobals,
+                    }
+                },
             };
+            config.define!.__DISABLE_ASSERTIONS__ = JSON.stringify(true);
+            config.define!.__LOG_VERBOSITY_THRESHOLD__ = JSON.stringify(2);
             break;
 
         case 'website':
@@ -70,7 +119,7 @@ export default defineConfig(({ mode }) => {
             pug_locals.base = config.base;
             config.build = {
                 outDir: websiteDir,
-                sourcemap: 'hidden',
+                sourcemap: false,
                 rollupOptions: {
                     input: {
                         main: resolve(__dirname, 'index.html'),
@@ -95,13 +144,15 @@ export default defineConfig(({ mode }) => {
         default:
             config.build = {
                 outDir,
-                // emptyOutDir: true,
                 lib: {
                     entry: resolve(source, 'treemap-renderer.ts'),
                     name: 'treemap-renderer',
-                    formats: ['cjs', 'umd', 'es'],
+                    formats: ['cjs', 'es'],
                 },
-                sourcemap: 'hidden',
+                sourcemap: false,
+                rollupOptions: {
+                    external: libExternal,
+                },
             };
             config.define!.__DISABLE_ASSERTIONS__ = JSON.stringify(true);
             config.define!.__LOG_VERBOSITY_THRESHOLD__ = JSON.stringify(2);

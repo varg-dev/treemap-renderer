@@ -60,7 +60,9 @@
         "rxjs": "~7.8.1"
     },
     "scripts": {
-        "build": "vite build && tsc --emitDeclarationOnly",
+        "build": "vite build --mode=production && tsc --emitDeclarationOnly",
+        "build:fast": "vite build --mode=fast",
+        "build:release": "vite build --mode=release && tsc --emitDeclarationOnly",
         "build:website": "vite build --mode=website",
         "dev": "vite dev",
         "dev:website": "vite build --mode=website && vite preview --mode=website",

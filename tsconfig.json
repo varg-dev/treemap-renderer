@@ -11,6 +11,8 @@
         "allowSyntheticDefaultImports": true,
         "alwaysStrict": true,
         "declaration": true,
+        "incremental": true,
+        "tsBuildInfoFile": ".tsbuildinfo",
         "experimentalDecorators": true,
         "moduleResolution": "bundler",
         "noImplicitAny": true,
