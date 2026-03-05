@@ -1,6 +1,6 @@
 /* spellchecker: disable */
 
-import {Observable, ReplaySubject} from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 
 import {
     auxiliaries,
@@ -16,11 +16,11 @@ import {
     vec3
 } from 'webgl-operate';
 
-import {AbstractCamera} from './abstractcamera';
-import {VisualizationType} from "./visualization";
-import {AbstractNavigationModifier} from "./abstractnavigationmodifier";
-import {Navigationmodifier2D} from "./navigationmodifier2D";
-import {Navigationmodifier3D} from "./navigationmodifier3D";
+import { AbstractCamera } from './abstractcamera';
+import { VisualizationType } from './visualization';
+import { AbstractNavigationModifier } from './abstractnavigationmodifier';
+import { Navigationmodifier2D } from './navigationmodifier2D';
+import { Navigationmodifier3D } from './navigationmodifier3D';
 
 const assert = auxiliaries.assert;
 const v2 = gl_matrix_extensions.v2;

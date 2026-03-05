@@ -16,7 +16,7 @@ import { ScreenAlignedQuadGeometry } from './screenalignedquadgeometry';
 
 import SAQ_VERT_SOURCE from './shaders/screenalignedquad.vert';
 import SAQ_FRAG_SOURCE from './shaders/screenalignedquad.frag';
-import {AbstractCamera} from "./abstractcamera";
+import { AbstractCamera } from './abstractcamera';
 
 /* spellchecker: enable */
 
@@ -240,4 +240,3 @@ export class ScreenAlignedQuadRenderPass extends Initializable {
     }
 
 }
-

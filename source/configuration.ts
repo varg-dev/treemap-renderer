@@ -118,6 +118,19 @@ export class Configuration {
     /** @see {@link labels} */
     protected _labels: Configuration.Labels;
 
+    private static validateOrThrow(
+        section: string,
+        value: unknown,
+        schema: unknown,
+        refs: Array<[unknown, string]> = []
+    ): void {
+        if (properties.validate(value as object, schema as object, refs as Array<[object, string]>)) {
+            return;
+        }
+
+        throw new Error(`Configuration validation failed for '${section}'.`);
+    }
+
 
     /**
      * Accessor for the altered object. The caller is responsible to reset the altered-status.
@@ -136,9 +149,7 @@ export class Configuration {
         const schema = Configuration.TREEMAP_SCHEMA.properties.topology;
         /* Skip validation on this interleaved or tupled array due to crazy performance impact. This
         seems to be an issue within the jsonschema package (not webgl-operate). */
-        if (!properties.validate(topology, schema, [])) {
-            return;
-        }
+        Configuration.validateOrThrow('topology', topology, schema, []);
         properties.complement(topology, schema);
         properties.compare(topology, this._topology, this._altered, 'topology');
         this._topology = topology;
@@ -151,9 +162,7 @@ export class Configuration {
 
     set buffers(buffers: Configuration.Buffers) {
         const schema = Configuration.TREEMAP_SCHEMA.properties.buffers;
-        if (!properties.validate(buffers, schema, [])) {
-            return;
-        }
+        Configuration.validateOrThrow('buffers', buffers, schema, []);
         properties.complement(buffers, schema);
         properties.compare(buffers, this._buffers, this._altered, 'buffers');
         this._buffers = buffers;
@@ -166,10 +175,8 @@ export class Configuration {
 
     set bufferViews(bufferViews: Configuration.BufferViews) {
         const schema = Configuration.TREEMAP_SCHEMA.properties.bufferViews;
-        if (!properties.validate(bufferViews, schema,
-            [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']])) {
-            return;
-        }
+        Configuration.validateOrThrow('bufferViews', bufferViews, schema,
+            [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']]);
         properties.complement(bufferViews, schema);
         properties.compare(bufferViews, this._bufferViews, this._altered, 'bufferViews');
         this._bufferViews = bufferViews;
@@ -182,10 +189,8 @@ export class Configuration {
 
     set colors(colors: Configuration.Colors) {
         const schema = Configuration.TREEMAP_SCHEMA.properties.colors;
-        if (!properties.validate(colors, schema,
-            [[Configuration.COLOR_REFERENCE_SCHEMA, '/ColorReference']])) {
-            return;
-        }
+        Configuration.validateOrThrow('colors', colors, schema,
+            [[Configuration.COLOR_REFERENCE_SCHEMA, '/ColorReference']]);
         properties.complement(colors, schema);
         properties.compare(colors, this._colors, this._altered, 'colors');
         this._colors = colors;
@@ -198,10 +203,8 @@ export class Configuration {
 
     set layout(layout: Configuration.Layout) {
         const schema = Configuration.TREEMAP_SCHEMA.properties.layout;
-        if (!properties.validate(layout, schema,
-            [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']])) {
-            return;
-        }
+        Configuration.validateOrThrow('layout', layout, schema,
+            [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']]);
         properties.complement(layout, schema);
         properties.compare(layout, this._layout, this._altered, 'layout');
         this._layout = layout;
@@ -214,12 +217,10 @@ export class Configuration {
 
     set geometry(geometry: Configuration.Geometry) {
         const schema = Configuration.TREEMAP_SCHEMA.properties.geometry;
-        if (!properties.validate(geometry, schema, [
+        Configuration.validateOrThrow('geometry', geometry, schema, [
             [Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference'],
             [Configuration.COLOR_REFERENCE_SCHEMA, '/ColorReference'],
-            [Configuration.COLOR_SCHEMA_SCHEMA, '/ColorScheme']])) {
-            return;
-        }
+            [Configuration.COLOR_SCHEMA_SCHEMA, '/ColorScheme']]);
         properties.complement(geometry, schema);
         properties.compare(geometry, this._geometry, this._altered, 'geometry');
         this._geometry = geometry;
@@ -231,10 +232,8 @@ export class Configuration {
 
     set labels(labels: Configuration.Labels) {
         const schema = Configuration.TREEMAP_SCHEMA.properties.labels;
-        if (!properties.validate(labels, schema,
-            [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']])) {
-            return;
-        }
+        Configuration.validateOrThrow('labels', labels, schema,
+            [[Configuration.BUFFER_REFERENCE_SCHEMA, '/BufferReference']]);
         properties.complement(labels, schema);
         properties.compare(labels, this._labels, this._altered, 'labels');
 
@@ -348,14 +347,25 @@ export namespace Configuration {
         mapping: Array<number>;
     };
 
-    export function isLinearizationMapping(object: any): object is LinearizationMapping {
-        if (typeof object === "string" || object instanceof String || object in AttributeBuffer.Linearization) {
+    export function isLinearizationMapping(object: unknown): object is LinearizationMapping {
+        if (typeof object === 'string' || object instanceof String) {
             return false;
         }
 
-        return 'type' in object
-            && Object.values(AttributeBuffer.LinearizationMapping).includes(object.type)
-            && 'mapping' in object;
+        if (typeof object !== 'object' || object === null) {
+            return false;
+        }
+
+        if (!('type' in object) || !('mapping' in object)) {
+            return false;
+        }
+
+        const type = (object as { type: unknown }).type;
+        if (typeof type !== 'string') {
+            return false;
+        }
+
+        return (Object.values(AttributeBuffer.LinearizationMapping) as Array<string>).includes(type);
     }
 
     export interface Buffer {
@@ -411,8 +421,8 @@ export namespace Configuration {
 
     export type Colors = Array<ColorArray | ColorPreset>;
 
-    export function isColorArray(object: any): object is ColorArray {
-        if (typeof object !== "object") {
+    export function isColorArray(object: unknown): object is ColorArray {
+        if (typeof object !== 'object' || object === null) {
             return false;
         }
 
@@ -420,8 +430,8 @@ export namespace Configuration {
             && 'colorspace' in object;
     }
 
-    export function isColorPreset(object: any): object is ColorPreset {
-        if (typeof object !== "object") {
+    export function isColorPreset(object: unknown): object is ColorPreset {
+        if (typeof object !== 'object' || object === null) {
             return false;
         }
 

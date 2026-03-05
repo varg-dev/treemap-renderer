@@ -1,6 +1,6 @@
-import {AbstractNavigationModifier} from "./abstractnavigationmodifier";
-import {Camera2D} from "./camera2D";
-import {auxiliaries, gl_matrix_extensions, ray_math, vec2, vec3} from 'webgl-operate';
+import { AbstractNavigationModifier } from './abstractnavigationmodifier';
+import { Camera2D } from './camera2D';
+import { auxiliaries, gl_matrix_extensions, ray_math, vec2, vec3 } from 'webgl-operate';
 
 const v2 = gl_matrix_extensions.v2;
 const v3 = gl_matrix_extensions.v3;

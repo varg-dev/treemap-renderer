@@ -99,13 +99,37 @@ export class DirectConfigTreemapExample extends Example {
                     config.labels = oldConfig.labels;
                 }
 
-                config.topology = (configData as Configuration).topology || {};
-                config.layout = (configData as Configuration).layout || {};
-                config.buffers = (configData as Configuration).buffers || [];
-                config.bufferViews = (configData as Configuration).bufferViews || [];
-                config.colors = (configData as Configuration).colors || [];
-                config.geometry = (configData as Configuration).geometry || {};
-                config.labels = (configData as Configuration).labels || {};
+                const parsed = configData as {
+                    topology?: Configuration.Topology;
+                    layout?: Configuration.Layout;
+                    buffers?: Configuration.Buffers;
+                    bufferViews?: Configuration.BufferViews;
+                    colors?: Configuration.Colors;
+                    geometry?: Configuration.Geometry;
+                    labels?: Configuration.Labels;
+                };
+
+                if (parsed.topology !== undefined) {
+                    config.topology = parsed.topology;
+                }
+                if (parsed.layout !== undefined) {
+                    config.layout = parsed.layout;
+                }
+                if (parsed.buffers !== undefined) {
+                    config.buffers = parsed.buffers;
+                }
+                if (parsed.bufferViews !== undefined) {
+                    config.bufferViews = parsed.bufferViews;
+                }
+                if (parsed.colors !== undefined) {
+                    config.colors = parsed.colors;
+                }
+                if (parsed.geometry !== undefined) {
+                    config.geometry = parsed.geometry;
+                }
+                if (parsed.labels !== undefined) {
+                    config.labels = parsed.labels;
+                }
 
                 visualization.configuration = config;
                 visualization.update();

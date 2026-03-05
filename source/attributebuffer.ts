@@ -9,7 +9,7 @@ const LogLevel = auxiliaries.LogLevel;
 import { AttributeTransformations } from './attributetransformations';
 import { Configuration } from './configuration';
 import { Topology } from './topology';
-import { Node } from "./node";
+import { Node } from './node';
 
 /* spellchecker: enable */
 

@@ -24,23 +24,23 @@ import {
     vec3
 } from 'webgl-operate';
 
-import {AbstractCamera} from './abstractcamera';
+import { AbstractCamera } from './abstractcamera';
 
-import {CuboidRenderPass} from './cuboidrenderpass';
-import {Geometry} from './geometry';
-import {MultiRenderTarget} from './multirendertarget';
-import {CoordsAccess, IdAccess, Navigation} from './navigation';
-import {PointRenderPass} from './pointrenderpass';
-import {QuadRenderPass} from './quadrenderpass';
-import {ScreenAlignedQuadRenderPass} from './screenalignedquadrenderpass';
-import {Visualization, VisualizationType} from './visualization';
+import { CuboidRenderPass } from './cuboidrenderpass';
+import { Geometry } from './geometry';
+import { MultiRenderTarget } from './multirendertarget';
+import { CoordsAccess, IdAccess, Navigation } from './navigation';
+import { PointRenderPass } from './pointrenderpass';
+import { QuadRenderPass } from './quadrenderpass';
+import { ScreenAlignedQuadRenderPass } from './screenalignedquadrenderpass';
+import { Visualization, VisualizationType } from './visualization';
 
 import ROBOTO_FONT from './assets/roboto.fnt';
 import ROBOTO_DT from './assets/roboto.png';
-import {Camera2D} from "./camera2D";
+import { Camera2D } from './camera2D';
 import log = auxiliaries.log;
 import LogLevel = auxiliaries.LogLevel;
-import {Camera3D} from "./camera3D";
+import { Camera3D } from './camera3D';
 
 const assert = auxiliaries.assert;
 

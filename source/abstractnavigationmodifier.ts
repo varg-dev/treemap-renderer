@@ -1,7 +1,7 @@
 
 /* spellchecker: disable */
 
-import {auxiliaries, Camera, gl_matrix_extensions, mat4, ray_math, vec2, vec3} from 'webgl-operate';
+import { auxiliaries, Camera, gl_matrix_extensions, mat4, ray_math, vec2, vec3 } from 'webgl-operate';
 import { CameraModifier } from 'webgl-operate';
 
 /* spellchecker: enable */

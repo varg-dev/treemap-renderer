@@ -298,9 +298,12 @@ export class CSVData {
             parse(data, {
                 error: (error: any) => reject(error),
                 complete: (result) => {
-                    CSVData.parsePapaparseResult(result, header, config);
-
-                    resolve(config);
+                    try {
+                        CSVData.parsePapaparseResult(result, header, config);
+                        resolve(config);
+                    } catch (error) {
+                        reject(error);
+                    }
                 },
                 delimiter: header.csv_delimiter,
                 quoteChar: '"',
