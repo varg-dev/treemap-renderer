@@ -175,11 +175,7 @@ describe('Configuration', () => {
                 identifier: 'view-with-late-ref',
                 source: 'buffer:weights',
                 transformations: [
-                    {
-                        type: 'propagate-up',
-                        operation: 'sum',
-                        weight: 'buffer:weights',
-                    },
+                    { type: 'propagate-up', operation: 'sum' },
                 ],
             } as Configuration.BufferView,
         ];
@@ -255,9 +251,10 @@ describe('Configuration', () => {
                 source: 'buffer:weights',
                 transformations: [
                     {
-                        type: 'propagate-up',
-                        operation: 'sum',
-                        weight: 'buffer:missing',
+                        type: 'transform',
+                        operation: 'add',
+                        buffer: 'buffer:missing',
+                        parameter: 1.0,
                     },
                 ],
             } as Configuration.BufferView,

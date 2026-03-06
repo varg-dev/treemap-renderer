@@ -89,3 +89,20 @@ When touching legacy areas, prefer small, safe improvements in this order:
 
 ## 13) Polyfill
 The polyfill layer is considered legacy code and should not be part of automated review and refactoring.
+
+## 14) Validation Strategy
+- Distinguish schema validation (setters) from semantic reference validation (cross-reference consistency).
+- Keep setters focused on shape and local constraints; avoid throwing semantic reference errors there.
+- Centralize unresolved-reference checks in `Configuration.validateReferences()`.
+- Call `validateReferences()` at explicit processing boundaries (for example, before layout/resolve work in `Visualization.update()`).
+- Reference-validation errors must remain actionable and section-specific, e.g. `Configuration validation failed for 'layout': unknown buffer reference 'buffer:weights'.`.
+
+## 15) Type Predicates
+- Use `value is Type` predicates for runtime guards that also narrow types (especially for reference detection).
+- Keep predicates side-effect free.
+- Route semantic failures through dedicated error helpers after predicate checks.
+
+## 16) Validation-First Testing
+- Test schema validation failures and semantic reference failures in separate test cases.
+- Add order-insensitive scenarios where references are set before/after definitions and validate in one consolidated pass.
+- Include explicit regression tests for unresolved references at each config boundary (`layout`, `bufferViews`, `geometry`, `labels`).

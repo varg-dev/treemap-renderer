@@ -12,19 +12,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize Node.js environment
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: master
           path: src
       - name: Check out deploy branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: deploy
           path: deploy
       - name: Clean up output
-        run: git rm -rf *
+        run: |
+          find . -mindepth 1 -maxdepth 1 -not -name '.git' -print0 | xargs -0 rm -rf
         working-directory: deploy
       - name: Set up dependencies
         run: npm install
@@ -33,12 +37,14 @@ jobs:
         run: npm run build:website
         working-directory: src
       - name: Copy website
-        run: cp -r src/website/* deploy
+        run: cp -r src/website/. deploy/
       - name: Commit result
         run: |
-          git config user.email "${{ github.event.pusher.email }}"
-          git config user.name "${{ github.event.pusher.name }}"
-          git add *
-          git diff-index --quiet HEAD || git commit -m "deploy: ${{ github.event.head_commit.message }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "${{ github.actor }}"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "deploy: website ${{ github.run_id }}"
+          fi
           git push
         working-directory: deploy

@@ -196,6 +196,12 @@ export class Configuration {
         }
     }
 
+    private static hasTransformationBuffer(
+        transform: Configuration.Transformation
+    ): transform is Configuration.Transformation & { buffer: string } {
+        return 'buffer' in transform && Configuration.isBufferReference(transform.buffer);
+    }
+
     private validateLayoutReferences(layout: Configuration.Layout, knownBufferRefs: Set<string>): void {
         Configuration.validateBufferReference('layout', layout.weight, knownBufferRefs);
 
@@ -221,8 +227,9 @@ export class Configuration {
             }
 
             for (const transform of view.transformations) {
-                Configuration.validateBufferReference('bufferViews', transform.weight, knownBufferRefs);
-                Configuration.validateBufferReference('bufferViews', transform.buffer, knownBufferRefs);
+                if (Configuration.hasTransformationBuffer(transform)) {
+                    Configuration.validateBufferReference('bufferViews', transform.buffer, knownBufferRefs);
+                }
             }
         }
     }

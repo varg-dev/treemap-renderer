@@ -13,11 +13,13 @@ const source = resolve(__dirname, 'source');
 const outDir = resolve(__dirname, 'dist');
 const websiteDir = resolve(__dirname, 'website');
 
-const pug_options = { localImports: true }
-const pug_locals = {
-    name: "VARG Treemap Renderer",
-    base: '/'
-}
+const websiteBase = process.env.VITE_WEBSITE_BASE ?? '/treemap-renderer/';
+
+const pugOptions = { localImports: true };
+const pugLocals = {
+    name: 'VARG Treemap Renderer',
+    base: '/',
+};
 
 let commit = '';
 try {
@@ -34,7 +36,7 @@ try {
 }
 
 /**
- * 4 modes are considered:
+ * 5 modes are considered:
  * - Development: don't emit anything, serve website and library in dev mode. (development, vite dev)
  * - Fast: local iteration build (no minify, no d.ts, no sourcemaps). (fast, vite build --mode=fast)
  * - Production: standard lib build as cjs + es. (production, vite build)
@@ -42,6 +44,10 @@ try {
  * - Website: static website build. (website, vite build --mode=website)
  */
 export default defineConfig(({ mode }) => {
+
+    const locals = {
+        ...pugLocals,
+    };
 
     const config: UserConfigExport = {
         root,
@@ -116,8 +122,8 @@ export default defineConfig(({ mode }) => {
             break;
 
         case 'website':
-            config.base = '/treemap-renderer/';
-            pug_locals.base = config.base;
+            config.base = websiteBase;
+            locals.base = config.base;
             config.build = {
                 outDir: websiteDir,
                 sourcemap: false,
@@ -136,6 +142,33 @@ export default defineConfig(({ mode }) => {
                     },
                     output: {
                         inlineDynamicImports: false,
+                        manualChunks: (id) => {
+                            if (id.includes('node_modules')) {
+                                const normalized = id.split('\\').join('/');
+                                const modulesStart = normalized.indexOf('node_modules/');
+                                const relativePath = modulesStart !== -1 ?
+                                    normalized.substring(modulesStart + 'node_modules/'.length) :
+                                    '';
+
+                                if (relativePath.startsWith('@')) {
+                                    const parts = relativePath.split('/');
+                                    return `vendor-${parts.slice(0, 2).join('-')}`;
+                                }
+
+                                const topLevelPackage = relativePath.split('/')[0];
+                                if (topLevelPackage.length > 0) {
+                                    return `vendor-${topLevelPackage}`;
+                                }
+
+                                return 'vendor';
+                            }
+
+                            if (id.includes(source)) {
+                                return 'treemap';
+                            }
+
+                            return undefined;
+                        },
                     }
                 }
             };
@@ -163,7 +196,7 @@ export default defineConfig(({ mode }) => {
 
     config.plugins = [
         markdownPlugin.plugin({ mode: [markdownPlugin.Mode.HTML] }),
-        pugPlugin(pug_options, pug_locals),
+        pugPlugin(pugOptions, locals),
         glsl(),
     ];
 
