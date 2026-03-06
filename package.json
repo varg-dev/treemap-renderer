@@ -52,6 +52,7 @@
         "url": "^0.11.4",
         "vite": "^7.3.1",
         "vite-plugin-glsl": "^1.5.5",
+        "vite-plugin-markdown": "^2.2.0",
         "vite-plugin-pug": "^0.4.1",
         "vitest": "^4.0.18",
         "webgl-operate": "^0.9.0"

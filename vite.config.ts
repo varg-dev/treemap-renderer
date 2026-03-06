@@ -6,6 +6,7 @@ import { defineConfig, UserConfigExport } from 'vite';
 
 import pugPlugin from 'vite-plugin-pug';
 import glsl from 'vite-plugin-glsl';
+import * as markdownPlugin from 'vite-plugin-markdown';
 
 const root = resolve(__dirname, '.');
 const source = resolve(__dirname, 'source');
@@ -160,7 +161,11 @@ export default defineConfig(({ mode }) => {
 
     }
 
-    config.plugins = [pugPlugin(pug_options, pug_locals), glsl()];
+    config.plugins = [
+        markdownPlugin.plugin({ mode: [markdownPlugin.Mode.HTML] }),
+        pugPlugin(pug_options, pug_locals),
+        glsl(),
+    ];
 
     return config;
 });

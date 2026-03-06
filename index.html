@@ -31,6 +31,20 @@
             font-size: 1em;
             font-family: "Roboto Mono" !important;
         }
+
+        .markdown-overview h2 {
+            margin-top: 0.75rem;
+            font-size: 1.75rem;
+        }
+
+        .markdown-overview h3 {
+            margin-top: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .markdown-overview p:last-child {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 
@@ -39,12 +53,18 @@
 
     <script type="module">
         import * as treemaprenderer from '/examples/index.ts';
+        import { html as libraryOverviewHtml } from '/examples/library-overview.md';
+
         window['treemaprenderer'] = treemaprenderer;
         document.title = __LIB_NAME__;
         document.querySelector('#version').innerHTML = treemaprenderer.version();
         document.querySelector('#branch').innerHTML = treemaprenderer.branch();
         document.querySelector('#commit').innerHTML = treemaprenderer.commit();
         document.querySelector('#cryear').innerHTML = new Date().getFullYear();
+        const libraryOverview = document.querySelector('#library-overview');
+        if (libraryOverview) {
+            libraryOverview.innerHTML = libraryOverviewHtml;
+        }
     </script>
 </body>
 
