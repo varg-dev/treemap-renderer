@@ -187,6 +187,7 @@ export namespace AttributeBuffer {
         // Use additionally provided id-mapping or index-mapping to map from foreign topology
         if (Configuration.isLinearizationMapping(bufferConfig.linearization)) {
             return AttributeTransformations.renormalize_using_intermediate_linearization(
+                tree,
                 bufferConfig.data as Configuration.AttributeBuffer,
                 bufferConfig.linearization as Configuration.LinearizationMapping, normalization);
         }

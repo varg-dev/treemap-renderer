@@ -24,13 +24,14 @@
 
                     "identifier": { "type": "string" },
 
-                    "type": { "type": "string", "enum": [ "numbers", "uint8", "uint16", "int16", "uint32", "int32", "float32", "float64" ] },
+                    "type": { "type": "string", "enum": [ "numbers", "uint8", "int8", "uint16", "int16", "uint32", "int32", "float32", "float64" ] },
 
                     "encoding": { "type": "string", "enum": [ "base64", "native" ], "default": "native" },
 
                     "data": { "anyOf": [
                         { "type": "array", "items": { "type": "number" } },
                         { "type": "Uint8Array" },
+                        { "type": "Int8Array" },
                         { "type": "Uint16Array" },
                         { "type": "Int16Array" },
                         { "type": "Uint32Array" },

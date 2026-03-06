@@ -72,6 +72,24 @@ describe('Configuration', () => {
             }));
     });
 
+    it('accepts int8 buffer types and serializes Int8Array payloads', () => {
+        const cfg = new Configuration();
+        cfg.buffers = [
+            {
+                identifier: 'signed',
+                type: 'int8',
+                data: new Int8Array([-1, 0, 1]),
+            },
+        ];
+
+        expect(cfg.buffersToJSON()[0]).toEqual(
+            expect.objectContaining({
+                identifier: 'signed',
+                type: 'int8',
+                data: [-1, 0, 1],
+            }));
+    });
+
     it('normalizes label names from object map to Map on setter', () => {
         const cfg = new Configuration();
         const labels = {

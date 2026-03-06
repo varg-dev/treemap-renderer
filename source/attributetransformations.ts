@@ -128,7 +128,8 @@ export namespace AttributeTransformations {
         return result;
     }
 
-    export function renormalize_using_intermediate_linearization(source: Configuration.AttributeBuffer,
+    export function renormalize_using_intermediate_linearization(tree: Topology,
+        source: Configuration.AttributeBuffer,
         mapping: Configuration.LinearizationMapping, normalization: Array<number>): Float32Array {
 
         const result = new Float32Array(normalization.length);
@@ -137,7 +138,22 @@ export namespace AttributeTransformations {
 
         switch (mapping.type) {
             case AttributeBuffer.LinearizationMapping.IdMapping:
-                assert(false, `Id-Mapping not yet implemented`);
+                for (let sourceId = 0; sourceId < mapping.mapping.length; ++sourceId) {
+                    const sourceIndex = mapping.mapping[sourceId];
+                    if (sourceIndex === undefined || sourceIndex < 0 || sourceIndex >= source.length) {
+                        continue;
+                    }
+
+                    const sourceInnerNode = tree.innerNodeById(sourceId);
+                    const sourceLeafNode = tree.leafNodeById(sourceId);
+                    assert(!(sourceInnerNode !== undefined && sourceLeafNode !== undefined),
+                        `Expected unique node mapping for id ${sourceId} for id-mapping.`);
+
+                    const sourceNode = sourceInnerNode ?? sourceLeafNode;
+                    assert(sourceNode !== undefined,
+                        `Expected node with id ${sourceId} to exist for id mapping.`);
+                    result[sourceNode.index] = source[sourceIndex];
+                }
                 break;
 
             case AttributeBuffer.LinearizationMapping.IndexMapping:
@@ -431,13 +447,13 @@ export namespace AttributeTransformations {
                             values.push(value);
                         });
 
-                        values.sort();
+                        values.sort((a, b) => a - b);
 
                         if (values.length % 2 === 0) {
-                            target[parent.index] = (values[values.length / 2]
-                                + values[values.length / 2]) / 2.0;
+                            const upperMiddle = values.length / 2;
+                            target[parent.index] = (values[upperMiddle - 1] + values[upperMiddle]) / 2.0;
                         } else {
-                            target[parent.index] = values[values.length / 2];
+                            target[parent.index] = values[Math.floor(values.length / 2)];
                         }
                     });
                 }
@@ -510,7 +526,7 @@ export namespace AttributeTransformations {
         let max: number;
         if ('range' in transform) {
             min = (transform as any).range[0];
-            max = (transform as any).range[0];
+            max = (transform as any).range[1];
         } else {
             min = (transform as any).min;
             max = (transform as any).max;

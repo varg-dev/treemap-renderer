@@ -88,6 +88,24 @@ describe('AttributeTransformations', () => {
         expect(bottomUp).toEqual([2, 3, 5, 6, 4, 1, 0]);
     });
 
+    it('applies median propagation with numeric sorting for even and odd counts', () => {
+        const tree = createStarTopology(2);
+        const evenChildren = new Float32Array([0, 20, 2]);
+        AttributeTransformations.applyPropagation(tree, evenChildren, {
+            type: 'propagate-up',
+            operation: 'median',
+        });
+        expect(evenChildren[0]).toBeCloseTo(11);
+
+        const oddChildren = new Float32Array([0, 100, 2, 20]);
+        const oddTree = createStarTopology(3);
+        AttributeTransformations.applyPropagation(oddTree, oddChildren, {
+            type: 'propagate-up',
+            operation: 'median',
+        });
+        expect(oddChildren[0]).toBeCloseTo(20);
+    });
+
     it('passes the tree to callback function', () => {
         const tree = createStarTopology(2);
         const target = new Float32Array([1, 2, 3]);
@@ -116,5 +134,34 @@ describe('AttributeTransformations', () => {
                 operation: 'invalid' as unknown as ((value: number) => number),
             });
         }).toThrowError(`Expected callback operation to be a function`);
+    });
+
+    it('clamps with both min and max from a range tuple', () => {
+        const tree = createStarTopology(2);
+        const target = new Float32Array([1, 5, 10]);
+
+        AttributeTransformations.applyClamp(tree, target, {
+            type: 'clamp',
+            range: [3, 8],
+        });
+
+        expect(Array.from(target)).toEqual([3, 5, 8]);
+    });
+
+    it('maps source buffers using id-mapping linearization', () => {
+        const tree = new Topology();
+        tree.initialize(Topology.InputFormat.Interleaved, Topology.InputSemantics.ParentIdId,
+            [0, 1, 0, 2]);
+
+        const source = [10, 20, 30];
+        const normalization = tree.edgeIndexToTopologyIndexMap;
+        const result = AttributeTransformations.renormalize_using_intermediate_linearization(tree, source,
+            {
+                type: 'id-mapping',
+                mapping: [1, 2, 0],
+            },
+            normalization);
+
+        expect(Array.from(result)).toEqual([20, 30, 10]);
     });
 });
