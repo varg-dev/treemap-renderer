@@ -1,12 +1,6 @@
 
 # Non-functional Requirements (Implementation Constraints)
 
-## Architecture
-Modules:
-- `treemap-renderer`: The visualization and rendering library
-- `tests`: The tests of the library
-- `examples`: a self-hostable entrypoint to a website with an overview to the library along several demonstrators
-
 ## Dependencies
 Core dependencies are:
 - npm
@@ -14,6 +8,12 @@ Core dependencies are:
 - vite
 - WebGL
 - webgl-operate
+
+## Architecture
+Modules:
+- `treemap-renderer`: The visualization and rendering library
+- `tests`: The tests of the library
+- `examples`: a self-hostable entrypoint to a website with an overview to the library along several demonstrators
 
 ## Validation and Safety
 - Separate schema validation (setters) from semantic/reference validation.
