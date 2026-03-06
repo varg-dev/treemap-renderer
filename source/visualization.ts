@@ -294,6 +294,8 @@ export class Visualization {
 
         assert(config.topology !== undefined, `Valid topology expected`);
 
+        config.validateReferences();
+
         // let t = this.logPipelinePart();
 
         let orderInvalid = altered.layout.sort;

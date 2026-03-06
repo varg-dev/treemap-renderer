@@ -46,6 +46,15 @@ export class Configuration {
     /* cspell:disable-next-line */
     private static readonly COLOR_SCHEMA_SCHEMA: any = COLOR_SCHEMA_SCHEMA_JSON; // @todo remove this when new color config is done
 
+    private static readonly BUFFER_REFERENCE_PATTERN = /^(buffer|bufferView):[_a-zA-Z][_a-zA-Z0-9\-]*[_a-zA-Z0-9]+$/;
+    private static readonly COLOR_REFERENCE_PATTERN = /^(color):[_a-zA-Z][_a-zA-Z0-9\-]*[_a-zA-Z0-9]+$/;
+    private static readonly BUILTIN_COLOR_REFERENCES = [
+        'color:auxiliary',
+        'color:emphasis',
+        'color:inner',
+        'color:leaf',
+    ];
+
 
     /**
      * Alterable auxiliary object for tracking changes on renderer input and lazy updates.
@@ -129,6 +138,143 @@ export class Configuration {
         }
 
         throw new Error(`Configuration validation failed for '${section}'.`);
+    }
+
+    private static isBufferReference(value: unknown): value is string {
+        return typeof value === 'string' && Configuration.BUFFER_REFERENCE_PATTERN.test(value);
+    }
+
+    private static isColorReference(value: unknown): value is string {
+        return typeof value === 'string' && Configuration.COLOR_REFERENCE_PATTERN.test(value);
+    }
+
+    private static throwUnknownReference(section: string, type: 'buffer' | 'color', reference: string): never {
+        throw new Error(`Configuration validation failed for '${section}': unknown ${type} reference '${reference}'.`);
+    }
+
+    private getKnownBufferReferences(): Set<string> {
+        const refs = new Set<string>();
+
+        for (const buffer of this._buffers) {
+            refs.add(`buffer:${buffer.identifier}`);
+        }
+
+        for (const view of this._bufferViews) {
+            refs.add(`bufferView:${view.identifier}`);
+        }
+
+        return refs;
+    }
+
+    private getKnownColorReferences(): Set<string> {
+        const refs = new Set<string>(Configuration.BUILTIN_COLOR_REFERENCES);
+
+        for (const color of this._colors) {
+            refs.add(`color:${color.identifier}`);
+        }
+
+        return refs;
+    }
+
+    private static validateBufferReference(section: string, reference: unknown, known: Set<string>): void {
+        if (!Configuration.isBufferReference(reference)) {
+            return;
+        }
+
+        if (!known.has(reference)) {
+            Configuration.throwUnknownReference(section, 'buffer', reference);
+        }
+    }
+
+    private static validateColorReference(section: string, reference: unknown, known: Set<string>): void {
+        if (!Configuration.isColorReference(reference)) {
+            return;
+        }
+
+        if (!known.has(reference)) {
+            Configuration.throwUnknownReference(section, 'color', reference);
+        }
+    }
+
+    private validateLayoutReferences(layout: Configuration.Layout, knownBufferRefs: Set<string>): void {
+        Configuration.validateBufferReference('layout', layout.weight, knownBufferRefs);
+
+        if (layout.sort?.key !== undefined) {
+            Configuration.validateBufferReference('layout', layout.sort.key, knownBufferRefs);
+        }
+
+        if (layout.siblingMargin?.value !== undefined) {
+            Configuration.validateBufferReference('layout', layout.siblingMargin.value, knownBufferRefs);
+        }
+
+        if (layout.parentPadding?.value !== undefined) {
+            Configuration.validateBufferReference('layout', layout.parentPadding.value, knownBufferRefs);
+        }
+    }
+
+    private validateBufferViewReferences(bufferViews: Configuration.BufferViews, knownBufferRefs: Set<string>): void {
+        for (const view of bufferViews) {
+            Configuration.validateBufferReference('bufferViews', view.source, knownBufferRefs);
+
+            if (view.transformations === undefined) {
+                continue;
+            }
+
+            for (const transform of view.transformations) {
+                Configuration.validateBufferReference('bufferViews', transform.weight, knownBufferRefs);
+                Configuration.validateBufferReference('bufferViews', transform.buffer, knownBufferRefs);
+            }
+        }
+    }
+
+    private validateGeometryReferences(geometry: Configuration.Geometry, knownBufferRefs: Set<string>, knownColorRefs: Set<string>): void {
+
+        if (geometry.parentLayer !== undefined) {
+            Configuration.validateColorReference('geometry', geometry.parentLayer.colorMap, knownColorRefs);
+        }
+
+        if (geometry.leafLayer !== undefined) {
+            Configuration.validateBufferReference('geometry', geometry.leafLayer.areaScale, knownBufferRefs);
+            Configuration.validateBufferReference('geometry', geometry.leafLayer.height, knownBufferRefs);
+            Configuration.validateBufferReference('geometry', geometry.leafLayer.colors, knownBufferRefs);
+            Configuration.validateColorReference('geometry', geometry.leafLayer.colorMap, knownColorRefs);
+        }
+
+        Configuration.validateColorReference('geometry', geometry.auxiliary, knownColorRefs);
+
+        if (geometry.emphasis !== undefined) {
+            Configuration.validateColorReference('geometry', geometry.emphasis.color, knownColorRefs);
+        }
+    }
+
+    private validateLabelReferences(labels: Configuration.Labels, knownBufferRefs: Set<string>): void {
+        Configuration.validateBufferReference('labels', labels.names, knownBufferRefs);
+
+        const additionallyLabelSet = labels.additionallyLabelSet;
+        if (typeof additionallyLabelSet === 'string') {
+            Configuration.validateBufferReference('labels', additionallyLabelSet, knownBufferRefs);
+        }
+    }
+
+    public validateReferences(): void {
+        const knownBufferRefs = this.getKnownBufferReferences();
+        const knownColorRefs = this.getKnownColorReferences();
+
+        if (this._layout !== undefined) {
+            this.validateLayoutReferences(this._layout, knownBufferRefs);
+        }
+
+        if (this._bufferViews !== undefined) {
+            this.validateBufferViewReferences(this._bufferViews, knownBufferRefs);
+        }
+
+        if (this._geometry !== undefined) {
+            this.validateGeometryReferences(this._geometry, knownBufferRefs, knownColorRefs);
+        }
+
+        if (this._labels !== undefined) {
+            this.validateLabelReferences(this._labels, knownBufferRefs);
+        }
     }
 
 
