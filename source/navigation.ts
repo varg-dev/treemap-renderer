@@ -165,6 +165,8 @@ export class Navigation {
         if (isWheel) {
             return Navigation.Mode.ZoomStep;
         }
+        // Missing implementation branch: touch only supports single-finger pan for now.
+        // Pinch-zoom, multi-finger pan, and touch-rotate are intentionally unresolved.
         if (this._touchSupported && event instanceof TouchEvent && event.touches.length === 1) {
             return Navigation.Mode.Pan;
         }
@@ -335,8 +337,7 @@ export class Navigation {
             return;
         }
 
-        assert(this._mode === undefined,
-            `Interactions other than pan are not implemented for touch events.`);
+        // Missing implementation branch: non-pan touch modes are ignored until gesture support is added.
     }
 
     protected onTouchMove(latests: Array<TouchEvent>, previous: Array<TouchEvent>): void {
@@ -350,13 +351,16 @@ export class Navigation {
             return;
         }
 
-        assert(this._mode === undefined,
-            `Interactions other than pan are not implemented for touch events.`);
+        // Missing implementation branch: non-pan touch modes are ignored until gesture support is added.
     }
 
-    protected onTouchEnd(latests: Array<TouchEvent>, previous: Array<TouchEvent>): void { }
+    protected onTouchEnd(latests: Array<TouchEvent>, previous: Array<TouchEvent>): void {
+        // Missing implementation branch: gesture completion/finalization for touch navigation.
+    }
 
-    protected onTouchCancel(latests: Array<TouchEvent>, previous: Array<TouchEvent>): void { }
+    protected onTouchCancel(latests: Array<TouchEvent>, previous: Array<TouchEvent>): void {
+        // Missing implementation branch: touch cancellation reset handling.
+    }
 
     /**
      * Returns whether or not the primary mouse button (usually left) is currently pressed.

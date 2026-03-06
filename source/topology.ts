@@ -114,11 +114,7 @@ export class Topology {
             As a consequence, if a node id of a parent is referenced as a child somewhere else another
             (probably leaf) node is created ... */
 
-            // TODO: separate topology creation in implicit inner nodes and explicit inner nodes
-
-            /** TEST */
             innerNodesById.set(node.id, node);
-            /** TEST END */
 
             // Test for last edge to omit next parent detection
             if (edge1[0] === Node.INVALID_ID && edge1[1] === Node.INVALID_ID) {
@@ -130,12 +126,6 @@ export class Topology {
                 /* If the subsequent edge has the current child node as parent, mark and use this node
                 as parent node. */
 
-                /*
-                assert(innerNodesById.has(node.id) === false, `expected unique ids for inner nodes, ` +
-                    `given ${edge0[1]} of ${edge0[0]} (next parent of ${edge1[1]})`);
-                */
-
-                // innerNodesById.set(node.id, node);
                 parent = node;
 
             } else if (edge1[0] !== edge0[0]) {
@@ -143,6 +133,8 @@ export class Topology {
 
                 /* If the subsequent edge has a parent that is neither this edges child node nor this
                 edges parent node, gather the parent for next iterations node creation ahead. */
+                /* Missing branch by design: this parser does not implement deferred parent resolution.
+                Parent ids must already be known at this point (pre-order input contract). */
 
                 assert(innerNodesById.has(edge1[0]), `expected next parent to be already created, ` +
                     `given ${edge1[0]}`);
@@ -155,6 +147,16 @@ export class Topology {
     }
 
 
+    /**
+     * Processes interleaved parent/child *index* pairs where parent indices are topology indices rather
+     * than explicit node ids. This path is reached from `initialize(Topology.InputSemantics.ParentIndexId, ...)`
+     * for both tupled/interleaved encodings.
+     *
+     * Example in practice: an input `[ -1, 0, 0, 1, 0, 2 ]` denotes root->A and root->B, with children
+     * given as indices. The method must normalize these indices to internal node indices before
+     * reconstructing sibling/parent links. If this path mis-handles that normalization, the hierarchy can be
+     * built with incorrect parent attachments and downstream geometry/label updates become inconsistent.
+     */
     private fromInterleavedEdgesIndexById(edges: Array<number>): void {
         assert(edges.length % 2 === 0,
             `expected length of interleaved edges list to be a multiple of 2`);
@@ -162,6 +164,8 @@ export class Topology {
         const nodes = new Array<Node>();
         const nodesByDepth = new Array<Array<Node>>();
 
+        const hasRootSentinel = edges[0] === Node.INVALID_ID;
+        const topologyParentOffset = hasRootSentinel ? 0 : 1;
         let i = 0;
 
         /* Create root node. */
@@ -170,7 +174,7 @@ export class Topology {
         nodesByDepth.push(new Array<Node>());
         nodesByDepth[0].push(nodes[0]);
 
-        if (edges[0] === -1) { // skip root node from edges
+        if (hasRootSentinel) { // skip root edge from input tuples when present
             i += 2;
         }
 
@@ -179,15 +183,11 @@ export class Topology {
         for (; i < edges.length; i += 2) {
             const edge: [number, number] = [edges[i + 0], edges[i + 1]];
 
-            let parent: Node | undefined = undefined;
-            if (edge[0] < nodes.length && edges[0] === -1) { // fix root issue (until datasets are fixed)
-                // TODO: remove this hack
-                parent = nodes[edge[0]];
-            } else {
-                assert(edge[0] < nodes.length, `expected parent to be processed before child`);
+            // Missing branch by design: out-of-order parent indices are not buffered/replayed here.
+            const parentIndex = edge[0] < 0 ? 0 : edge[0] + topologyParentOffset;
+            assert(parentIndex < nodes.length, `expected parent to be processed before child`);
 
-                parent = nodes[edge[0] < 0 ? 0 : edge[0] + 1];
-            }
+            const parent: Node | undefined = nodes[parentIndex];
 
 
             if (parent.lastChild !== Node.INVALID_INDEX) {

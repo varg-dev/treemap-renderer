@@ -55,7 +55,7 @@ export class Visualization {
     /**
      *  Parameter used to create either a 2D or 3D visualization
      */
-    private _visualizationType : VisualizationType;
+    private _visualizationType: VisualizationType;
 
     /**
      * Cached variables for lazy update of geometry - @todo DL - review this.
@@ -179,7 +179,7 @@ export class Visualization {
         this._intermediaries.aggregatedColors = colors;
 
         /* Deduce the domain of the attribute mapped to color. */
-        const range : [number, number] = (geometryConfig.leafLayer!.colorsNormalized! ? [0, 1] : AttributeBuffer.leafRange(colors, this._intermediaries.topology)!);
+        const range: [number, number] = (geometryConfig.leafLayer!.colorsNormalized! ? [0, 1] : AttributeBuffer.leafRange(colors, this._intermediaries.topology)!);
         // i === 0 ? AttributeBuffer.range(colors[i])! : [0, 1];
         const colorCount = this._colorLUT.leafColorCount;
         // i === 0 ? colorTable.leafColorCount : colorTable.deltaColorCount;
