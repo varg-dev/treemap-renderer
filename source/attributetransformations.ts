@@ -715,37 +715,108 @@ export namespace AttributeTransformations {
 
     export function applyDiscretization(tree: Topology, target: Configuration.AttributeBuffer,
         transform: Configuration.Transformation): void {
-        assert(false, `Implementation missing`);
+        if (tree.numberOfLeafNodes === 0) {
+            return;
+        }
+
+        let percentiles: Array<number>;
+
+        switch (transform.operation) {
+            case 'quartiles':
+                percentiles = [0.25, 0.5, 0.75];
+                break;
+            case 'quantiles':
+                percentiles = (transform as any).percentiles as Array<number>;
+                break;
+            default:
+                throw new Error(`Unsupported discretization operation '${transform.operation}'.`);
+        }
+
+        assert(Array.isArray(percentiles) && percentiles.length > 0,
+            `Expected at least one percentile for discretization.`);
+
+        const sorted = new Array<number>();
+        for (const value of target) {
+            if (Number.isFinite(value)) {
+                sorted.push(value);
+            }
+        }
+
+        assert(sorted.length > 0, `Expected at least one finite value for discretization.`);
+
+        sorted.sort((a: number, b: number) => a - b);
+
+        const normalizedPercentiles = percentiles
+            .map((p: number) => {
+                assert(Number.isFinite(p), `Expected all percentiles to be finite.`);
+
+                let value = p;
+                if (p > 1.0) {
+                    value = p / 100.0;
+                }
+
+                return Math.max(0.0, Math.min(1.0, value));
+            })
+            .sort((a: number, b: number) => a - b);
+
+        const thresholds = normalizedPercentiles.map((percentile: number) => {
+            const rawIndex = Math.min(sorted.length - 1, Math.max(0.0, percentile * (sorted.length - 1)));
+            const lower = Math.floor(rawIndex);
+            const upper = Math.ceil(rawIndex);
+
+            if (lower === upper) {
+                return sorted[lower];
+            }
+
+            const fraction = rawIndex - lower;
+            return sorted[lower] * (1.0 - fraction) + sorted[upper] * fraction;
+        });
+
+        for (let nodeIndex = 0; nodeIndex < target.length; ++nodeIndex) {
+            const value = target[nodeIndex];
+
+            if (!Number.isFinite(value)) {
+                continue;
+            }
+
+            let bucket = 0;
+            while (bucket < thresholds.length && value > thresholds[bucket]) {
+                ++bucket;
+            }
+
+            target[nodeIndex] = thresholds.length === 0 ? 0.0 : bucket / thresholds.length;
+        }
     }
 
     export function applyCallback(tree: Topology, target: Configuration.AttributeBuffer,
         transform: Configuration.Transformation): void {
 
-        const callback = (transform as any).operation;
+        const callback = transform.operation;
         const iteration = (transform as any).iteration;
+
+        if (typeof callback !== 'function') {
+            throw new Error(`Expected callback operation to be a function, given ${typeof callback}.`);
+        }
+
+        const call = (node: Node): void => {
+            target[node.index] = (callback as Configuration.TransformationCallback)(target[node.index], node, tree);
+        };
 
         switch (iteration) {
             case Topology.IterationDirection.TopDown:
-                tree.nodesDo((node: Node) => {
-                    target[node.index] = callback(target[node.index], node, target, tree);
-                });
+                tree.nodesDo(call);
                 break;
             case Topology.IterationDirection.DepthFirst:
-                tree.reverseNodesDo((node: Node) => {
-                    target[node.index] = callback(target[node.index], node, target, tree);
-                });
+                tree.depthFirstDo(call);
                 break;
             case Topology.IterationDirection.Leaves:
-                tree.forEachLeafNode((node: Node) => {
-                    target[node.index] = callback(target[node.index], node, target, tree);
-                });
+                tree.forEachLeafNode(call);
                 break;
             case Topology.IterationDirection.BottomUp:
-            default:
-                tree.depthFirstDo((node: Node) => {
-                    target[node.index] = callback(target[node.index], node, target, tree);
-                });
+                tree.reverseNodesDo(call);
                 break;
+            default:
+                throw new Error(`Expected valid callback iteration order, given ${iteration}.`);
         }
     }
 

@@ -1039,6 +1039,51 @@ export class Renderer extends AbstractRenderer implements CoordsAccess, IdAccess
         this._camera.eye = vec3.fromValues(eyeX, eyeY, eyeZ);
     }
 
+    /**
+     * Convenience function, so that a client using the treemap-lib does not need to import vec3 to set
+     * the camera's look-at point.
+     */
+    setCameraCenter(centerX: number, centerY: number, centerZ: number): void {
+        this._camera.center = vec3.fromValues(centerX, centerY, centerZ);
+    }
+
+    /**
+     * Convenience function, so that a client using the treemap-lib does not need to import vec3 to set
+     * the camera's up-vector.
+     */
+    setCameraUp(upX: number, upY: number, upZ: number): void {
+        this._camera.up = vec3.fromValues(upX, upY, upZ);
+    }
+
+    /**
+     * Convenience function, so that a client using the treemap-lib can configure a new camera look-at pair
+     * without directly using vec3.
+     */
+    setCameraLookAt(eyeX: number, eyeY: number, eyeZ: number, centerX: number, centerY: number, centerZ: number): void {
+        this.setCameraEye(eyeX, eyeY, eyeZ);
+        this.setCameraCenter(centerX, centerY, centerZ);
+    }
+
+    /**
+     * Convenience function, so that a client using the treemap-lib can adjust field-of-view.
+     */
+    setCameraFovy(fovy: number): void {
+        this._camera.fovy = fovy;
+    }
+
+    /**
+     * Convenience function, so that a client using the treemap-lib can update 2D scale or fail clearly
+     * when used with a 3D camera.
+     */
+    setCameraScale(scale: number): void {
+        const camera2d = this._camera as Camera2D;
+        if (camera2d && typeof (camera2d as Camera2D).scale === 'number') {
+            (camera2d as Camera2D).scale = scale;
+            return;
+        }
+        throw new Error('setCameraScale is only supported for 2D visualization mode.');
+    }
+
     /** Expose protected invalidation of super class. */
     invalidate(): void {
         if (!this.initialized) {

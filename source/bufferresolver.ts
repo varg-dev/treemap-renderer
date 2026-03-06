@@ -33,15 +33,13 @@ export class BufferResolver {
             return defaultBufferCallback();
         }
 
-        // @todo: At several points here and further down the call chain
-        // (e.g. AttributeBuffer.createView), `undefined` is returned when a buffer is not found
-        // or something goes wrong, leading to a broken and hard-to-debug map.
-        // This should ideally be replaced by throwing errors (or at least console.errors),
-        // but the usage of the `defaultBufferCallback` might complicate things.
         const buffer = AttributeBuffer.create(this._topology, normalization, identifier, config);
 
         if (defaultBufferCallback && buffer === undefined) {
             return defaultBufferCallback();
+        }
+        if (buffer === undefined) {
+            throw new Error(`Unable to resolve buffer '${identifier}'.`);
         }
         return buffer;
     }

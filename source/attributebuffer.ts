@@ -64,8 +64,31 @@ export namespace AttributeBuffer {
 
     export function createNormalization(tree: Topology, config: Configuration):
         AttributeTransformations.Normalization {
+        const normalization = tree.edgeIndexToTopologyIndexMap;
+        assert(normalization.length === tree.numberOfNodes, `Expected normalization map size to match number of nodes.`);
+
+        const used = new Array<boolean>(normalization.length).fill(false);
+        for (let edgeIndex = 0; edgeIndex < normalization.length; ++edgeIndex) {
+            const topologyIndex = normalization[edgeIndex];
+
+            assert(Number.isInteger(topologyIndex), `Expected topology indices to be integers, got ${topologyIndex}`);
+            assert(topologyIndex >= 0 && topologyIndex < tree.numberOfNodes,
+                `Expected topology index to be in range, got ${topologyIndex}.`);
+            assert(!used[topologyIndex], `Expected topology index ${topologyIndex} to be unique in normalization map.`);
+            used[topologyIndex] = true;
+        }
+
+        if (normalization.length > 0) {
+            assert(normalization[0] === 0,
+                `Expected root topology index of normalization map to be zero, got ${normalization[0]}.`);
+        }
+
+        for (let topologyIndex = 0; topologyIndex < used.length; ++topologyIndex) {
+            assert(used[topologyIndex], `Expected topology index ${topologyIndex} to be present in normalization map.`);
+        }
+
         // return AttributeTransformations.normalization_backup(tree, config);
-        return tree.edgeIndexToTopologyIndexMap;
+        return normalization;
     }
 
     /**

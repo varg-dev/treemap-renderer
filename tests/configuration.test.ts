@@ -31,6 +31,17 @@ describe('Configuration', () => {
         expect(cfg.altered.any).toBe(true);
     });
 
+    it('initializes layout, geometry, and labels to specification defaults', () => {
+        const cfg = new Configuration();
+
+        expect(cfg.layout.algorithm).toBe('strip');
+        expect(cfg.layout.weight).toBe('buffer:weights');
+        expect(cfg.layout.aspectRatio).toBe(1.0);
+        expect(cfg.geometry.parentLayer).toEqual({});
+        expect(cfg.geometry.leafLayer).toEqual({});
+        expect(cfg.labels).toEqual({});
+    });
+
     it('accepts valid buffers and keeps binary-array shape in JSON export', () => {
         const cfg = new Configuration();
         const buffers = [

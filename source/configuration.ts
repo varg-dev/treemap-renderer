@@ -127,6 +127,33 @@ export class Configuration {
     /** @see {@link labels} */
     protected _labels: Configuration.Labels;
 
+    constructor() {
+        const layout: Configuration.Layout = {
+            algorithm: Layout.LayoutAlgorithm.Strip,
+            weight: 'buffer:weights',
+            aspectRatio: 1.0,
+            sort: {
+                algorithm: NodeSort.Algorithm.Keep,
+                key: NodeSort.Key.Identity,
+            },
+        };
+
+        const geometry: Configuration.Geometry = {
+            parentLayer: {},
+            leafLayer: {},
+        };
+
+        const labels: Configuration.Labels = {};
+
+        properties.complement(layout, Configuration.TREEMAP_SCHEMA.properties.layout);
+        properties.complement(geometry, Configuration.TREEMAP_SCHEMA.properties.geometry);
+        this._layout = layout;
+        this._geometry = geometry;
+        this._labels = labels;
+
+        this._topology = undefined as unknown as Configuration.Topology;
+    }
+
     private static validateOrThrow(
         section: string,
         value: unknown,

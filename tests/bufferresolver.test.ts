@@ -26,4 +26,24 @@ describe('BufferResolver', () => {
         expect(resolved).toBeDefined();
         expect(Array.from(resolved as Float32Array)).toEqual([3, 3, 3]);
     });
+
+    it('uses fallback callback when identifier resolves to missing buffer', () => {
+        const tree = createStarTopology(2);
+        const resolver = new BufferResolver(tree);
+        const cfg = new Configuration();
+
+        const resolved = resolver.resolve('buffer:missing', cfg, [], resolver.constBufferCallback(2.0));
+
+        expect(Array.from(resolved as Float32Array)).toEqual([2, 2, 2]);
+    });
+
+    it('throws when identifier is invalid and no fallback callback is given', () => {
+        const tree = createStarTopology(2);
+        const resolver = new BufferResolver(tree);
+        const cfg = new Configuration();
+
+        expect(() => {
+            resolver.resolve('buffer:missing', cfg, []);
+        }).toThrowError(`Unable to resolve buffer 'buffer:missing'.`);
+    });
 });

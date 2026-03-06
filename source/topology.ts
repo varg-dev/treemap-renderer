@@ -503,7 +503,7 @@ export class Topology {
             callback(node);
             this.childrenDo(node, recursion);
         };
-        callback(this.root);
+        recursion(this.root);
     }
 
     /**
@@ -614,7 +614,11 @@ export class Topology {
      */
     reverseParentsDo(callback: Topology.NodeCallback): void {
         for (let i = this.depth - 2; i >= 0; --i) {
-            this.sliceDo(i, callback);
+            this.sliceRangeDo(i, (start: number, end: number) => {
+                for (let current = end; current >= start; --current) {
+                    callback(this._nodes[current]);
+                }
+            });
         }
     }
 
