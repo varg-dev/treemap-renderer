@@ -13,7 +13,7 @@ block content
           | &#x2014; Implicit Inner Nodes Treemap
 
       .col-4
-        input.col-3.form-control(type="file" accept=".csv")#fileUpload
+        input.form-control(type="file" accept=".csv")#fileUpload
 
       .col-2
         button.btn.btn-primary(type="button")#loadFile
@@ -22,6 +22,25 @@ block content
       .col-2
         button.pull-end.btn.btn-primary(type="button")#fullscreen
           | Fullscreen
+
+    .row.g-3.align-items-end.mt-2
+      .col-12.col-md-4
+        label.form-label(for="colorScheme") Color scheme
+        select.form-select#colorScheme(disabled)
+
+      .col-12.col-md-4
+        label.form-label(for="layoutAlgorithm") Layout algorithm
+        select.form-select#layoutAlgorithm(disabled)
+          option(value="strip") Strip
+          option(value="snake") Snake
+          option(value="hilbert") Hilbert
+          option(value="moore") Moore
+          option(value="codecity") Code City
+
+      .col-12.col-md-4
+        .form-check.form-switch
+          input.form-check-input(type="checkbox" role="switch" checked disabled)#labelsEnabled
+          label.form-check-label(for="labelsEnabled") Labels
 
 
   section.container.mt-5

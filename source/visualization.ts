@@ -112,7 +112,7 @@ export class Visualization {
             `expected any alteration when inner-node color mapping is yet to be defined`);
 
         /* @todo: also update when color table has changed (e.g., number of colors changed). */
-        if (!altered.any && !config.altered.topology) {
+        if (!altered.any && !config.altered.topology && !config.altered.colors) {
             return;
         }
 
@@ -127,7 +127,7 @@ export class Visualization {
                 geometryConfig.emphasis ? new Set(geometryConfig.emphasis.highlight) : undefined);
         }
 
-        if (config.altered.topology || this._geometry.innerNodeColors === undefined) {
+        if (config.altered.topology || config.altered.colors || this._geometry.innerNodeColors === undefined) {
             this._geometry.innerNodeColors = NodeColors.innerNodes(topology,
                 this._colorLUT.innerNodeColorOffset,
                 this._colorLUT.innerNodeColorCount);
@@ -140,7 +140,7 @@ export class Visualization {
         const altered = config.altered.geometry;
 
         /* @todo: also update when color table has changed (e.g., number of colors changed). */
-        if (!altered.any && !config.altered.topology) {
+        if (!altered.any && !config.altered.topology && !config.altered.colors) {
 
             return;
         }
@@ -168,7 +168,7 @@ export class Visualization {
         }
 
         /* Skip color mapping if nothing has changed and colors were previously mapped. */
-        if (!altered.colors && this._geometry.leafNodeColors !== undefined) {
+        if (!altered.colors && !config.altered.colors && this._geometry.leafNodeColors !== undefined) {
             return;
         }
 
@@ -320,6 +320,8 @@ export class Visualization {
             this._intermediaries.accessorySpaces = undefined;
             this._intermediaries.labelRects = undefined;
             this._intermediaries.labelPaddingSpaces = undefined;
+            this._intermediaries.leafLabels = undefined;
+            this._intermediaries.innerNodeLabels = undefined;
             layout = undefined;
 
             if (this._geometry.initialized) {
@@ -378,6 +380,8 @@ export class Visualization {
 
             this._geometry.innerNodeLayouts = undefined;
             this._geometry.leafNodeLayouts = undefined;
+            this._intermediaries.leafLabels = undefined;
+            this._intermediaries.innerNodeLabels = undefined;
         }
 
         //
@@ -499,12 +503,12 @@ export class Visualization {
                     return fallback;
                 }
 
-                // 3 may be a wrong assumption for some color presets
                 const colors = color.steps
                     ? (preset.colors.find((colors) => colors.length === color.steps! * 3) || preset.colors[0])
                     : preset.colors[0];
+                const stepCount = color.steps !== undefined ? color.steps : colors!.length / 3;
 
-                const colorscale = ColorScale.fromArray(colors!, preset.format as ColorScale.ArrayType, colors!.length / 3, undefined);
+                const colorscale = ColorScale.fromArray(colors!, preset.format as ColorScale.ArrayType, stepCount, undefined);
 
                 return colorscale.colors;
             } else {
@@ -563,6 +567,8 @@ export class Visualization {
                     ConfigurationAids.HeightScaleApproach.SomethingInverseSqrt);
             }
             this._geometry.altered.alter('heightScale');
+            this._intermediaries.leafLabels = undefined;
+            this._intermediaries.innerNodeLabels = undefined;
         }
 
         if (config.altered.geometry.outlineWidth) {
@@ -596,6 +602,8 @@ export class Visualization {
                 this._geometry.leafNodeHeights = heightValues;
 
                 this._geometry.altered.alter('leafNodeHeights');
+                this._intermediaries.leafLabels = undefined;
+                this._intermediaries.innerNodeLabels = undefined;
             }
 
         } else { // No leaf layer
@@ -655,6 +663,11 @@ export class Visualization {
 
                     this._renderer.invalidate();
                 }
+            } else {
+                this._intermediaries.leafLabels = [];
+                this._intermediaries.innerNodeLabels = [];
+                this._labelsChanged = true;
+                this._renderer.invalidate();
             }
         }
 

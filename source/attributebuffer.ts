@@ -116,7 +116,7 @@ export namespace AttributeBuffer {
         switch (identifier.substr(0, colonIndex)) {
             case 'buffer':
                 return AttributeBuffer.createSourceBuffer(
-                    normalization, identifier.substr(colonIndex + 1), configuration);
+                    tree, normalization, identifier.substr(colonIndex + 1), configuration);
             case 'bufferView':
                 return AttributeBuffer.createView(tree,
                     normalization, identifier.substr(colonIndex + 1), configuration);
@@ -167,7 +167,7 @@ export namespace AttributeBuffer {
      * @param configuration - The whole treemap configuration for target buffer lookup
      */
     export function createSourceBuffer(
-        normalization: Array<number>, identifier: string, configuration: Configuration):
+        tree: Topology, normalization: Array<number>, identifier: string, configuration: Configuration):
         Configuration.AttributeBuffer | undefined {
 
         // Select buffer configuration

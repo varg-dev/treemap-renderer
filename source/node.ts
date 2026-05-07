@@ -15,12 +15,13 @@ export class Node {
 
 
     /**
-     * Index in the render linearization (0 is root).
+     * Index in the render linearization after topology initialization (0 is root).
      */
     index = Node.INVALID_INDEX;
 
     /**
-     * Index in the layout linearization (breadth-first with inner and leaf nodes intertwined).
+     * Index in the layout linearization after topology initialization
+     * (breadth-first with inner and leaf nodes intertwined).
      */
     layoutIndex = Node.INVALID_INDEX;
 
@@ -35,36 +36,45 @@ export class Node {
     depth = Node.INVALID_DEPTH;
 
     /**
-     * Index of the immediate parent. Invalid index (-1) if root.
+     * Render index of the immediate parent after topology initialization.
+     * Invalid index (-1) if root.
      */
     parent = Node.INVALID_INDEX;
 
     /**
-     * Index of the first child. Invalid index (-1) if leaf.
+     * Render index of the first child after topology initialization.
+     * Invalid index (-1) if leaf.
      */
     firstChild = Node.INVALID_INDEX;
 
     /**
-     * Initial index of the first child intended for restoration of the initial order.
+     * Initial render index of the first child after topology initialization.
+     * This is intended for restoration of the initial order.
      */
 
     initialFirstChild = Node.INVALID_INDEX;
     /**
-     * Index of the subsequent sibling. Invalid index (-1) if last sibling.
+     * Render index of the subsequent sibling after topology initialization.
+     * Invalid index (-1) if last sibling.
      */
     nextSibling = Node.INVALID_INDEX;
 
     /**
-     * Initial index of the subsequent sibling intended for restoration of the initial order.
+     * Initial render index of the subsequent sibling after topology initialization.
+     * This is intended for restoration of the initial order.
      */
     initialNextSibling = Node.INVALID_INDEX;
 
 
     /**
      * Constructor of a node for simplified node setup.
+     *
+     * The index passed here is the temporary construction index used while topology input is parsed.
+     * Topology initialization remaps it into render and layout indices afterwards.
+     *
      * @param id - This nodes ID.
-     * @param index - This nodes Index.
-     * @param parent - The parent node for retrieving this node's depth and parent index.
+     * @param index - This node's temporary construction index.
+     * @param parent - The parent node for retrieving this node's depth and construction parent index.
      */
     constructor(id: number, index: number, parent?: Node) {
         this.id = id;

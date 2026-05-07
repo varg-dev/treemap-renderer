@@ -152,6 +152,9 @@ export namespace AttributeTransformations {
                     const sourceNode = sourceInnerNode ?? sourceLeafNode;
                     assert(sourceNode !== undefined,
                         `Expected node with id ${sourceId} to exist for id mapping.`);
+                    if (sourceNode === undefined) {
+                        continue;
+                    }
                     result[sourceNode.index] = source[sourceIndex];
                 }
                 break;

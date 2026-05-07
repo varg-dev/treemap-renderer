@@ -18,16 +18,29 @@ export class CodeCityLayout {
         result: Array<Rect>, layoutCallbacks: LayoutCallbacks, accessorySpace: Array<Rect>,
         labelRects: Array<Rect>, labelPaddingSpaces: Array<number>): void {
 
-        const rootWeight = weights[tree.root.index];
+        const localOffsets = new Array<vec2>();
+        // Code City packs bottom-up in parent-local coordinates and converts to global layout
+        // coordinates only after every subtree has a stable local extent.
+        CodeCityLayout.computeLocalLayouts(
+            tree, weights, aspectRatio, result, localOffsets, layoutCallbacks, accessorySpace,
+            labelRects, labelPaddingSpaces);
+        CodeCityLayout.globalizeLayouts(tree, result, localOffsets, accessorySpace, labelRects);
+        CodeCityLayout.normalizeLayouts(tree, result, accessorySpace, labelRects);
+    }
 
+    private static computeLocalLayouts(tree: Topology, weights: Configuration.AttributeBuffer,
+        aspectRatio: number, result: Array<Rect>, localOffsets: Array<vec2>,
+        layoutCallbacks: LayoutCallbacks, accessorySpace: Array<Rect>, labelRects: Array<Rect>,
+        labelPaddingSpaces: Array<number>): void {
+
+        const rootWeight = weights[tree.root.index];
         tree.nodesDo((leaf: Node) => {
             const weight = weights[leaf.index];
             const edgeLength = Math.sqrt(weight / rootWeight);
             result[leaf.index] = new Rect(0.0, 0.0, edgeLength * aspectRatio, edgeLength);
         });
 
-        const offsets = new Array<vec2>();
-        offsets[tree.root.index] = [0.0, 0.0];
+        localOffsets[tree.root.index] = [0.0, 0.0];
 
         tree.reverseParentsDo((parent: Node) => {
             let currentOffsetX = 0.0;
@@ -39,9 +52,8 @@ export class CodeCityLayout {
             let direction: CodeCityLayout.Direction = CodeCityLayout.Direction.Y;
 
             tree.childrenDo(parent, (current: Node) => {
-                const rect = result[current.index] =
-                    layoutCallbacks.siblingMarginAfterCallback(result[current.index],
-                        result[parent.index], result[parent.index], current);
+                const rect = layoutCallbacks.siblingMarginBeforeCallback(
+                    result[current.index], current, tree, result, labelRects, labelPaddingSpaces);
 
                 switch (direction) {
                     case CodeCityLayout.Direction.X:
@@ -62,7 +74,10 @@ export class CodeCityLayout {
                         break;
                 }
 
-                offsets[current.index] = [currentOffsetX, currentOffsetY];
+                localOffsets[current.index] = [
+                    currentOffsetX - rect.left,
+                    currentOffsetY - rect.bottom,
+                ];
 
                 switch (direction) {
                     case CodeCityLayout.Direction.X:
@@ -84,33 +99,47 @@ export class CodeCityLayout {
                 }
             });
 
-            const parentRect = layoutCallbacks.parentPaddingCallback(
-                new Rect(0.0, 0.0, parentX, parentY), parent, tree, result, labelRects,
-                labelPaddingSpaces);
-            result[parent.index] = layoutCallbacks.accessoryPaddingCallback(
-                parentRect, parent, tree, result, accessorySpace);
+            const contentRect = new Rect(0.0, 0.0, parentX, parentY);
+            const paddingLayout = layoutCallbacks.parentPaddingExpansionCallback!(
+                contentRect, parent, tree, result, labelRects, labelPaddingSpaces);
+            const accessoryLayout = layoutCallbacks.accessoryPaddingExpansionCallback!(
+                paddingLayout, parent, tree, result, accessorySpace);
+
+            result[parent.index] = accessoryLayout;
         });
+    }
 
+    private static globalizeLayouts(tree: Topology, result: Array<Rect>,
+        localOffsets: Array<vec2>, accessorySpace: Array<Rect>, labelRects: Array<Rect>): void {
+
+        const globalOffsets = new Array<vec2>();
+        globalOffsets[tree.root.index] = [0.0, 0.0];
         tree.nodesDo((parent: Node) => {
-            const layout = result[parent.index];
-            const offset = offsets[parent.index];
+            if (!parent.isRoot) {
+                const parentOffset = globalOffsets[parent.parent];
+                const localOffset = localOffsets[parent.index];
+                globalOffsets[parent.index] = [
+                    parentOffset[0] + localOffset[0],
+                    parentOffset[1] + localOffset[1],
+                ];
+            }
 
+            const offset = globalOffsets[parent.index];
+            const layout = result[parent.index];
             layout.applyOffset(offset[0], offset[1]);
 
-            // not required, as the preceding lines manipulate the object in the result array.
-            // result[parent.index] = layout;
+            if (accessorySpace[parent.index] !== undefined) {
+                accessorySpace[parent.index].applyOffset(offset[0], offset[1]);
+            }
 
-            tree.childrenDo(parent, (current: Node) => {
-
-                const childOffset = offsets[current.index];
-                childOffset[0] += offset[0];
-                childOffset[1] += offset[1];
-
-                // not required, as the preceding lines manipulate the object in the result array.
-                // offsets[current.index] = childOffset;
-            });
+            if (labelRects[parent.index] !== undefined) {
+                labelRects[parent.index].applyOffset(offset[0], offset[1]);
+            }
         });
+    }
 
+    private static normalizeLayouts(tree: Topology, result: Array<Rect>,
+        accessorySpace: Array<Rect>, labelRects: Array<Rect>): void {
         const rootLayout = result[tree.root.index];
         const normalizedLayout = new Rect(0, 0, rootLayout.aspectRatio, 1);
         normalizedLayout.centerAround([0.5, 0.5]);
@@ -132,6 +161,15 @@ export class CodeCityLayout {
         // Map root as last node as its layout is used for mapping
         tree.reverseNodesDo((node: Node) => {
             result[node.index] = result[node.index].map(rootLayout, normalizedLayout);
+
+            if (accessorySpace[node.index] !== undefined) {
+                accessorySpace[node.index] =
+                    accessorySpace[node.index].map(rootLayout, normalizedLayout);
+            }
+
+            if (labelRects[node.index] !== undefined) {
+                labelRects[node.index] = labelRects[node.index].map(rootLayout, normalizedLayout);
+            }
         });
 
         // Assertions
@@ -150,6 +188,7 @@ export class CodeCityLayout {
         //     });
         // }
     }
+
 }
 
 
